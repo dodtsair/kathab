@@ -5,6 +5,7 @@
     <artifactId>kathab</artifactId>
     <groupId>org.boazglean.kathab</groupId>
     <version>1.0-SNAPSHOT</version>
+    <relativePath>..</relativePath>
   </parent>
   <groupId>org.boazglean.kathab.nav</groupId>
   <artifactId>nav</artifactId>

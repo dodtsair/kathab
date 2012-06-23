@@ -6,6 +6,7 @@
     <groupId>org.boazglean.kathab.birdseye</groupId>
     <artifactId>birdseye</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <relativePath>..</relativePath>
   </parent>
   <artifactId>birdseye-dhtml</artifactId>
   <name>${project.version} - ${project.groupId}:${project.artifactId}</name>

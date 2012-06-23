@@ -6,6 +6,7 @@
     <groupId>org.boazglean.kathab.jsonp</groupId>
     <artifactId>jsonp</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <relativePath>..</relativePath>
   </parent>
   <artifactId>jsonp-functionaltests</artifactId>
   <name>${project.version} - ${project.groupId}:${project.artifactId}</name>

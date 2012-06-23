@@ -5,6 +5,7 @@
     <artifactId>dhtml</artifactId>
     <groupId>org.boazglean.kathab.dhtml</groupId>
     <version>1.0-SNAPSHOT</version>
+    <relativePath>..</relativePath>
   </parent>
 
     <artifactId>dhtml-webapp</artifactId>
