@@ -15,4 +15,13 @@
     <module>jsonp</module>
     <module>dhtml</module>
   </modules>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.testng</groupId>
+        <artifactId>testng</artifactId>
+        <version>6.5.2</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 </project>
