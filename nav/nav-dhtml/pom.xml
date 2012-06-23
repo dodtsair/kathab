@@ -7,9 +7,7 @@
     <artifactId>nav</artifactId>
     <version>1.0-SNAPSHOT</version>
   </parent>
-  <groupId>org.boazglean.kathab.nav</groupId>
   <artifactId>nav-dhtml</artifactId>
-  <version>1.0-SNAPSHOT</version>
   <name>${project.version} - ${project.groupId}:${project.artifactId}</name>
   <url>http://maven.apache.org</url>
   <properties>
