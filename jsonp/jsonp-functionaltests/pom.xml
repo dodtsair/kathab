@@ -7,9 +7,7 @@
     <artifactId>jsonp</artifactId>
     <version>1.0-SNAPSHOT</version>
   </parent>
-  <groupId>org.boazglean.kathab.jsonp</groupId>
   <artifactId>jsonp-functionaltests</artifactId>
-  <version>1.0-SNAPSHOT</version>
   <name>${project.version} - ${project.groupId}:${project.artifactId}</name>
   <url>http://maven.apache.org</url>
   <properties>
