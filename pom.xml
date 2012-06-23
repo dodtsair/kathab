@@ -73,6 +73,88 @@
   </build>
   <dependencyManagement>
     <dependencies>
+        <!-- Dependencies to internal artifacts contained in the same repo -->
+      <dependency>
+        <groupId>org.boazglean.kathab.frame</groupId>
+        <artifactId>frame-dhtml</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.boazglean.kathab.frame</groupId>
+        <artifactId>frame-jsonp</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.boazglean.kathab.account</groupId>
+        <artifactId>account-dhtml</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.boazglean.kathab.account</groupId>
+        <artifactId>account-jsonp</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.boazglean.kathab.nav</groupId>
+        <artifactId>nav-dhtml</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.boazglean.kathab.nav</groupId>
+        <artifactId>nav-jsonp</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.boazglean.kathab.birdseye</groupId>
+        <artifactId>birdseye-dhtml</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.boazglean.kathab.birdseye</groupId>
+        <artifactId>birdseye-jsonp</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.boazglean.kathab.control</groupId>
+        <artifactId>control-dhtml</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.boazglean.kathab.control</groupId>
+        <artifactId>control-jsonp</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.boazglean.kathab.jsonp</groupId>
+        <artifactId>jsonp-webapp</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.boazglean.kathab.jsonp</groupId>
+        <artifactId>jsonp-rpm</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.boazglean.kathab.jsonp</groupId>
+        <artifactId>jsonp-functionaltests</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.boazglean.kathab.dhtml</groupId>
+        <artifactId>dhtml-webapp</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.boazglean.kathab.dhtml</groupId>
+        <artifactId>dhtml-rpm</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.boazglean.kathab.dhtml</groupId>
+        <artifactId>dhtml-functionaltests</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
       <dependency>
         <groupId>javax</groupId>
         <artifactId>javaee-web-api</artifactId>
