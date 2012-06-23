@@ -5,7 +5,7 @@
   <artifactId>kathab</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>kathab</name>
+  <name>${project.version} - ${project.groupId}:${project.artifactId}</name>
   <modules>
     <module>frame</module>
     <module>account</module>

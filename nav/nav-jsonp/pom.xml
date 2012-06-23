@@ -10,7 +10,7 @@
   <groupId>org.boazglean.kathab.nav</groupId>
   <artifactId>nav-jsonp</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>nav-jsonp</name>
+  <name>${project.version} - ${project.groupId}:${project.artifactId}</name>
   <url>http://maven.apache.org</url>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

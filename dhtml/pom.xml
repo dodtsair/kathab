@@ -10,7 +10,7 @@
   <artifactId>dhtml</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>dhtml</name>
+  <name>${project.version} - ${project.groupId}:${project.artifactId}</name>
   <modules>
     <module>dhtml-webapp</module>
     <module>dhtml-rpm</module>
