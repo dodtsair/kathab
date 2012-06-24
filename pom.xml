@@ -18,7 +18,8 @@
         <module>control</module>
         <module>jsonp</module>
         <module>dhtml</module>
-    </modules>
+    <module>web</module>
+  </modules>
     <build>
         <pluginManagement>
             <plugins>
