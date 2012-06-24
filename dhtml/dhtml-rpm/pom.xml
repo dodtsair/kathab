@@ -6,7 +6,7 @@
     <groupId>org.boazglean.kathab.dhtml</groupId>
     <artifactId>dhtml</artifactId>
     <version>1.0-SNAPSHOT</version>
-    <relativePath>..</relativePath>
+    <relativePath>../pom.xml</relativePath>
   </parent>
   <artifactId>dhtml-rpm</artifactId>
   <name>${project.version} - ${project.groupId}:${project.artifactId}</name>
