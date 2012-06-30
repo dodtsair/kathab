@@ -9,6 +9,11 @@
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        
+        <!-- Constants -->
+        <netbeans.hint.license>mit</netbeans.hint.license>
+        
+        <!-- versions -->
     </properties>
     <modules>
         <module>frame</module>
@@ -18,11 +23,16 @@
         <module>control</module>
         <module>jsonp</module>
         <module>dhtml</module>
-    <module>web</module>
-  </modules>
+        <module>web</module>
+    </modules>
     <build>
         <pluginManagement>
             <plugins>
+                <plugin>
+                    <groupId>org.codehaus.cargo</groupId>
+                    <artifactId>cargo-maven2-plugin</artifactId>
+                    <version>1.2.2</version>
+                </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-compiler-plugin</artifactId>
@@ -69,6 +79,29 @@
                             </configuration>
                         </execution>
                     </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.jacoco</groupId>
+                    <artifactId>jacoco-maven-plugin</artifactId>
+                    <version>0.5.7.201204190339</version>
+                    <executions>
+                        <execution>
+                            <id>prepate-agent</id>
+                            <phase>validate</phase>
+                            <goals>
+                                <goal>prepare-agent</goal>
+                            </goals>
+                        </execution>
+                        <execution>
+                            <id>report</id>
+                            <phase>prepare-package</phase>
+                            <goals>
+                                <goal>report</goal>
+                            </goals>
+                        </execution>                    
+                    </executions>
+                    <configuration>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -156,7 +189,18 @@
                 <artifactId>dhtml-functionaltests</artifactId>
                 <version>${project.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.boazglean.kathab.web</groupId>
+                <artifactId>web-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
+            <dependency>
+                <groupId>org.mortbay.jetty</groupId>
+                <artifactId>servlet-api</artifactId>
+                <version>3.0.20100224</version>
+                <scope>provided</scope>
+            </dependency>
             <dependency>
                 <groupId>javax</groupId>
                 <artifactId>javaee-web-api</artifactId>
@@ -222,6 +266,24 @@
                 <artifactId>logback-classic</artifactId>
                 <version>1.0.6</version>
             </dependency>
+            <dependency> 
+                <groupId>org.projectlombok</groupId> 
+                <artifactId>lombok</artifactId> 
+                <version>0.11.0</version> 
+                <scope>provided</scope> 
+            </dependency> 
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>  
+                <version>1.9.0</version> 
+                <scope>test</scope>            
+            </dependency>
         </dependencies>
     </dependencyManagement>
+    <licenses>
+        <license>
+            <name>MIT</name>
+            <url>http://www.opensource.org/licenses/mit-license.php</url>
+        </license>
+    </licenses>
 </project>
