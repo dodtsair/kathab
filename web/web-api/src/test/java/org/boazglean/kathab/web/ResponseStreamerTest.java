@@ -24,10 +24,7 @@
 package org.boazglean.kathab.web;
 
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -76,7 +73,7 @@ public class ResponseStreamerTest {
     
     @Test
     public void testConverter() throws Exception {
-        URI source = this.getClass().getClassLoader().getResource("META-INF/MANIFEST.MF").toURI();
+        URI source = this.getClass().getClassLoader().getResource("folder/full.bin").toURI();
         ResponseStreamer streamer = new ResponseStreamer(source);
         HttpServletResponse resp = mock(HttpServletResponse.class);
         ServletOutputStream out = mock(ServletOutputStream.class);
@@ -85,6 +82,21 @@ public class ResponseStreamerTest {
         assertTrue(result);
         verify(resp).setDateHeader(eq(HttpHeader.LAST_MODIFIED.getSpec()), anyLong());
         verify(resp).setHeader(eq(HttpHeader.CONTENT_LENGTH.getSpec()), anyString());
+        verify(out).close();
+    }
+    
+    @Test
+    public void testConverterFull() throws Exception {
+        URI source = this.getClass().getClassLoader().getResource("folder/full.bin").toURI();
+        ResponseStreamer streamer = new ResponseStreamer(source);
+        HttpServletResponse resp = mock(HttpServletResponse.class);
+        ServletOutputStream out = mock(ServletOutputStream.class);
+        when(resp.getOutputStream()).thenReturn(out);
+        Boolean result = streamer.convert(resp);
+        assertTrue(result);
+        verify(resp).setDateHeader(eq(HttpHeader.LAST_MODIFIED.getSpec()), anyLong());
+        verify(resp).setHeader(eq(HttpHeader.CONTENT_LENGTH.getSpec()), anyString());
+        verify(out, times(247)).write((byte[])any(), anyInt(), anyInt());
         verify(out).close();
     }
     

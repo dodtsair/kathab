@@ -29,6 +29,9 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URLConnection;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import javax.servlet.http.HttpServletResponse;
 import lombok.Data;
 import lombok.NonNull;
@@ -88,10 +91,10 @@ public class ResponseStreamer implements Converter<Boolean, HttpServletResponse>
 
     public static void stream(InputStream in, OutputStream out) throws IOException {
         byte[] buffer = new byte[1024];
-        int read = buffer.length;
-        while (read == buffer.length) {
-            read = in.read(buffer);
+        int read = in.read(buffer);
+        while (read != -1) {
             out.write(buffer, 0, read);
+            read = in.read(buffer);
         }
     }
     

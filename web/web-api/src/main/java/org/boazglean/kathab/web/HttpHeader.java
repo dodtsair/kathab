@@ -32,7 +32,9 @@ import lombok.Getter;
 
 public enum HttpHeader {
     CONTENT_LENGTH("Content-Length"),
-    LAST_MODIFIED("Last-Modified");
+    LAST_MODIFIED("Last-Modified"),
+    EXPIRES("Expires"),
+    CACHE_CONTROL("Cache-Control");
 
     private HttpHeader(String spec) {
         this.spec = spec;
