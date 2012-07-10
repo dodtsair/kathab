@@ -12,11 +12,11 @@
     </servlet>
         
     <!-- This webapp has nothing but static content, map it all to the FinalResourceServlet -->
-    <servlet-mapping>
+<!--    <servlet-mapping>
         <servlet-name>Resource Servlet</servlet-name>
         <url-pattern>/*</url-pattern>
-    </servlet-mapping>
-<!--    <servlet-mapping>
+    </servlet-mapping> -->
+    <servlet-mapping>
         <servlet-name>Resource Servlet</servlet-name>
         <url-pattern>*.css</url-pattern>
     </servlet-mapping>
@@ -47,7 +47,19 @@
     <servlet-mapping>
         <servlet-name>Resource Servlet</servlet-name>
         <url-pattern>*.gif</url-pattern>
-    </servlet-mapping>-->
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Resource Servlet</servlet-name>
+        <url-pattern>*.html</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Resource Servlet</servlet-name>
+        <url-pattern>*.xhtml</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>Resource Servlet</servlet-name>
+        <url-pattern>*.htm</url-pattern>
+    </servlet-mapping>
     <welcome-file-list>
         <welcome-file>frame/index.html</welcome-file>
     </welcome-file-list>
