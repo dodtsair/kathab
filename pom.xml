@@ -24,14 +24,26 @@
         <module>jsonp</module>
         <module>dhtml</module>
         <module>web</module>
+        <module>api</module>
     </modules>
     <build>
         <pluginManagement>
             <plugins>
                 <plugin>
-                    <groupId>org.codehaus.cargo</groupId>
-                    <artifactId>cargo-maven2-plugin</artifactId>
-                    <version>1.2.2</version>
+                    <groupId>org.codehaus.mojo</groupId>
+                    <artifactId>build-helper-maven-plugin</artifactId>
+                    <version>1.7</version>
+                    <configuration>
+                        <propertyPrefix>project.version</propertyPrefix>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>parse-version</id>
+                            <goals>
+                                <goal>parse-version</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -196,6 +208,12 @@
             </dependency>
 
             <dependency>
+                <groupId>org.boazglean.kathab.api</groupId>
+                <artifactId>api-jar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.mortbay.jetty</groupId>
                 <artifactId>servlet-api</artifactId>
                 <version>3.0.20100224</version>
@@ -211,6 +229,7 @@
                 <groupId>org.testng</groupId>
                 <artifactId>testng</artifactId>
                 <version>6.5.2</version>
+                <scope>test</scope>
             </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
@@ -277,6 +296,16 @@
                 <artifactId>mockito-core</artifactId>  
                 <version>1.9.0</version> 
                 <scope>test</scope>            
+            </dependency>
+            <dependency>
+                <groupId>com.jolbox</groupId>
+                <artifactId>bonecp</artifactId>
+                <version>0.7.1.RELEASE</version>
+            </dependency>        
+            <dependency>
+                <groupId>com.h2database</groupId>
+                <artifactId>h2</artifactId>
+                <version>1.3.167</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
