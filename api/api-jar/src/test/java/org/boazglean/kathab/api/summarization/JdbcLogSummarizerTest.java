@@ -196,4 +196,63 @@ public class JdbcLogSummarizerTest {
         assertEquals(summary.getEventCount(logEleven.getName()), 150);
         assertEquals(summary.getEventCount(testLogger.getName()), 0);
     }
+    
+    @Test
+    public void summarizeByPackageAndLevel() {
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        summy.setSource(jdbcSource);
+        String baseLoggerName = testLogger.getName();
+        int count = 1;
+        int batchSize = 10;
+        Logger logOne = (Logger) LoggerFactory.getLogger(baseLoggerName + ".1");
+        Logger logTwo = (Logger) LoggerFactory.getLogger(baseLoggerName + ".2");
+        Logger logEleven = (Logger) LoggerFactory.getLogger(baseLoggerName + ".1.1");
+        for (Logger logger : new Logger[]{logOne, logTwo, logEleven, testLogger}) {
+            for (int batch = 0; batch < batchSize * count; ++batch) {
+                if(batch % 5 == 0) logger.error("error message String");
+                if(batch % 4 == 0) logger.warn("warn message String");
+                if(batch % 3 == 0) logger.info("info message String");
+                if(batch % 2 == 0) logger.debug("debug message String");
+                logger.trace("trace message String");
+            }
+            ++count;
+        }
+        LevelSummary summary = summy.summarizeByPackageAndLevel(logTwo.getName(), LogLevel.values());
+        assertNotNull(summary);
+        assertEquals(summary.getEventCount(LogLevel.ERROR), 4);
+        assertEquals(summary.getEventCount(LogLevel.WARN), 5);
+        assertEquals(summary.getEventCount(LogLevel.INFO), 7);
+        assertEquals(summary.getEventCount(LogLevel.DEBUG), 10);
+        assertEquals(summary.getEventCount(LogLevel.TRACE), 20);
+    }
+
+    @Test
+    public void summarizeByPackageAndLevelSubset() {
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        summy.setSource(jdbcSource);
+        String baseLoggerName = testLogger.getName();
+        int count = 1;
+        int batchSize = 10;
+        Logger logOne = (Logger) LoggerFactory.getLogger(baseLoggerName + ".1");
+        Logger logTwo = (Logger) LoggerFactory.getLogger(baseLoggerName + ".2");
+        Logger logEleven = (Logger) LoggerFactory.getLogger(baseLoggerName + ".1.1");
+        for (Logger logger : new Logger[]{logOne, logTwo, logEleven, testLogger}) {
+            for (int batch = 0; batch < batchSize * count; ++batch) {
+                if(batch % 5 == 0) logger.error("error message String");
+                if(batch % 4 == 0) logger.warn("warn message String");
+                if(batch % 3 == 0) logger.info("info message String");
+                if(batch % 2 == 0) logger.debug("debug message String");
+                logger.trace("trace message String");
+            }
+            ++count;
+        }
+        LevelSummary summary = summy.summarizeByPackageAndLevel(logTwo.getName(), LogLevel.ERROR, LogLevel.WARN);
+        assertNotNull(summary);
+        assertEquals(summary.getEventCount(LogLevel.ERROR), 4);
+        assertEquals(summary.getEventCount(LogLevel.WARN), 5);
+        assertEquals(summary.getEventCount(LogLevel.INFO), 0);
+        assertEquals(summary.getEventCount(LogLevel.DEBUG), 0);
+        assertEquals(summary.getEventCount(LogLevel.TRACE), 0);
+    }
+
 }

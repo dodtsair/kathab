@@ -43,7 +43,7 @@ public class JdbcLogSummarizer implements LogSummarizer {
     private String summarizeByLevelQuery = "select level_string as logLevel, count(*) as eventCount from logging_event where level_string in (%s) GROUP BY level_string";
     private String summarizeByPackageQuery = "select logger_name as packageName, count(*) as eventCount from logging_event where %s GROUP BY logger_name";
     private String summarizeByPackageWhereFragment = "locate(?, logger_name) != 0 or ";
-    private String summarizeByPackageAndLevelQuery;
+    private String summarizeByPackageAndLevelQuery = "select level_string as logLevel, count(*) as eventCount from logging_event where locate(?, logger_name) != 0 and level_string in (%s) GROUP BY level_string";
 
     @Override
     public LevelSummary summarizeByLevel() {
@@ -130,7 +130,7 @@ public class JdbcLogSummarizer implements LogSummarizer {
             String error = "Failed to read package summary";
             log.error(error);
             if (log.isInfoEnabled()) {
-                log.info("{}, levels: {}", error, Arrays.deepToString(includePrefixes));
+                log.info("{}, prefixes: {}", error, Arrays.deepToString(includePrefixes));
                 log.info(error, ex);
             }
         }
@@ -138,7 +138,49 @@ public class JdbcLogSummarizer implements LogSummarizer {
     }
 
     @Override
-    public Object summarizeByPackageAndLevel(String includePrefix, LogLevel... levels) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public LevelSummary summarizeByPackageAndLevel(String includePrefix, LogLevel... levels) {
+        LevelSummary summary = null;
+        try {
+            @Cleanup
+            Connection connection = source.getConnection();
+            StringBuilder levelSet = new StringBuilder();
+            for (LogLevel level : levels) {
+                levelSet.append("?,");
+            }
+            if (levels.length != 0) {
+                levelSet.deleteCharAt(levelSet.length() - 1);
+            }
+            @Cleanup
+            PreparedStatement query = connection.prepareStatement(String.format(summarizeByPackageAndLevelQuery, levelSet));
+            query.setString(1, includePrefix);
+            for (int index = 0; index < levels.length; ++index) {
+                query.setString(index + 2, levels[index].name());
+            }
+            ResultSet request = query.executeQuery();
+            LogLevel level = null;
+            summary = new LevelSummary();
+            while (request.next()) {
+                try {
+                    level = LogLevel.valueOf(request.getString("logLevel"));
+                    int eventCount = request.getInt("eventCount");
+                    summary.setEventCount(level, eventCount);
+                } catch (IllegalArgumentException ex) {
+                    String error = "Failed to parse logLevel";
+                    log.error(error);
+                    if (log.isInfoEnabled()) {
+                        log.info("{}, level: {}", error, level);
+                        log.info(error, ex);
+                    }
+                }
+            }
+        } catch (SQLException ex) {
+            String error = "Failed to read log level summary";
+            log.error(error);
+            if (log.isInfoEnabled()) {
+                log.info("{}, levels: {}", error, Arrays.deepToString(levels));
+                log.info(error, ex);
+            }
+        }
+        return summary;
     }
 }
