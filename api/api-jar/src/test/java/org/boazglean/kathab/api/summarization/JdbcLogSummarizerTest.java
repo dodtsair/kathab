@@ -30,6 +30,7 @@ import ch.qos.logback.classic.db.DBAppender;
 import ch.qos.logback.core.db.DataSourceConnectionSource;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.util.Arrays;
 import javax.sql.DataSource;
 import lombok.Cleanup;
 import org.h2.jdbcx.JdbcDataSource;
@@ -39,26 +40,32 @@ import static org.testng.Assert.*;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-
+import lombok.extern.slf4j.Slf4j;
+import org.h2.tools.Server;
 
 /**
  *
  * @author mpower
  */
+@Slf4j
 public class JdbcLogSummarizerTest {
     
     private JdbcDataSource jdbcSource;
     private Logger testLogger = (Logger)LoggerFactory.getLogger(JdbcLogSummarizerTest.class.getName() + ".testlogs");
     private DBAppender dbAppender;
+    private Server server;
     
     
     @BeforeMethod
     public void setup() throws Exception {
+        server = Server.createTcpServer("-tcpDaemon", "-tcpAllowOthers");
+        server.start();
         jdbcSource = new JdbcDataSource();
-        jdbcSource.setURL("jdbc:h2:mem:"  + this.getClass().getSimpleName() + ";DB_CLOSE_DELAY=-1");
+        jdbcSource.setURL("jdbc:h2:tcp://localhost/mem:"  + this.getClass().getSimpleName() + ";DB_CLOSE_DELAY=-1");
         @Cleanup Connection connection = jdbcSource.getConnection();
         Schema schema = new Schema();
         schema.initSchema(connection);
+        
 
         dbAppender = new DBAppender();
         dbAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
@@ -70,10 +77,16 @@ public class JdbcLogSummarizerTest {
         testLogger.setLevel(Level.ALL);
         testLogger.addAppender(dbAppender);
         dbAppender.start();
+        log.debug("" + connection.createStatement().executeQuery("select * from logging_event;"));
     }
     
     @AfterMethod
     public void teardown() throws Exception {
+        log.debug("" + jdbcSource.getConnection().createStatement().executeQuery("select * from logging_event;"));
+        testLogger.detachAppender(dbAppender);
+                
+        dbAppender.stop();
+        server.stop();
     }
     
     @Test
@@ -102,6 +115,29 @@ public class JdbcLogSummarizerTest {
         assertNotNull(summary);
         for(LogLevel level: LogLevel.values()) {
             assertEquals(summary.getEventCount(level), 10);
+        }
+    }
+    
+    @Test
+    public void summarizeByLevelSubset() {
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        summy.setSource(jdbcSource);
+        for(int count = 0; count < 10; ++count) {
+            testLogger.debug("debug message String");
+            testLogger.warn("warn message String");
+            testLogger.error("error message String");
+            testLogger.info("info message String");
+            testLogger.trace("trace message String");
+        }
+        LogLevel[] levels = Arrays.copyOf(LogLevel.values(), 2);
+        LevelSummary summary = summy.summarizeByLevel(levels);
+        assertNotNull(summary);
+        int index;
+        for(index = 0; index < 2; ++index) {
+            assertEquals(summary.getEventCount(LogLevel.values()[index]), 10);
+        }
+        for(; index< LogLevel.values().length; ++index) {
+            assertEquals(summary.getEventCount(LogLevel.values()[index]), 0);
         }
     }
 }

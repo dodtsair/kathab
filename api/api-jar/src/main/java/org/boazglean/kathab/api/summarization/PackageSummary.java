@@ -23,17 +23,26 @@
  */
 package org.boazglean.kathab.api.summarization;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  *
  * @author mpower
  */
-public interface LogSummarizer {
+public class PackageSummary {
+    private Map<String, Integer> levelSummary = new HashMap<String, Integer>();
     
-    public LevelSummary summarizeByLevel();
-    public LevelSummary summarizeByLevel(LogLevel... levels);
+    public int getEventCount(String packageName) {
+        if(levelSummary.containsKey(packageName)) {
+            return levelSummary.get(packageName);
+        }
+        return 0;
+    }
     
-    public PackageSummary summarizeByPackage();
-    public PackageSummary summarizeByPackage(String... includePrefix);
-
-    public Object summarizeByPackageAndLevel(String includePrefix, LogLevel... levels);
+    public void setEventCount(String packageName, int eventCount) {
+        levelSummary.put(packageName, eventCount);
+    }
+    
+    
 }

@@ -23,13 +23,8 @@
  */
 package org.boazglean.kathab.api.summarization;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.sql.DataSource;
 import lombok.Cleanup;
 import lombok.Data;
@@ -45,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 public class JdbcLogSummarizer implements LogSummarizer {
 
     private DataSource source;
-    private String summarizeByLevelQuery = "select level_string as LogLevel, count(*) as eventCount from logging_event GROUP BY level_string;";
+    private String summarizeByLevelQuery = "select level_string as LogLevel, count(*) as eventCount from logging_event where level_string in (%s) GROUP BY level_string";
     private String summarizeByPackageQuery;
     private String summarizeByPackageAndLevelQuery;
 
@@ -59,8 +54,18 @@ public class JdbcLogSummarizer implements LogSummarizer {
         LevelSummary summary = null;
         try {
             @Cleanup Connection connection = source.getConnection();
-            @Cleanup Statement query = connection.createStatement();
-            ResultSet request = query.executeQuery(summarizeByLevelQuery);
+            StringBuilder levelSet = new StringBuilder();
+            for(LogLevel level: levels) {
+                levelSet.append("?,");
+            }
+            if(levels.length != 0) {
+                levelSet.deleteCharAt(levelSet.length() - 1);
+            }
+            @Cleanup PreparedStatement query = connection.prepareStatement(String.format(summarizeByLevelQuery, levelSet));
+            for(int index = 1; index <= levels.length; ++index) {
+                query.setString(index, levels[index - 1].name());
+            }
+            ResultSet request = query.executeQuery();
             LogLevel level = null;
             summary = new LevelSummary();
             while(request.next()) {
@@ -90,12 +95,12 @@ public class JdbcLogSummarizer implements LogSummarizer {
     }
 
     @Override
-    public Object summarizeByPackage() {
+    public PackageSummary summarizeByPackage() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
     @Override
-    public Object summarizeByPackage(String... includePrefix) {
+    public PackageSummary summarizeByPackage(String... includePrefix) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
