@@ -49,23 +49,23 @@ import org.h2.tools.Server;
  */
 @Slf4j
 public class JdbcLogSummarizerTest {
-    
+
     private JdbcDataSource jdbcSource;
-    private Logger testLogger = (Logger)LoggerFactory.getLogger(JdbcLogSummarizerTest.class.getName() + ".testlogs");
+    private Logger testLogger = (Logger) LoggerFactory.getLogger(JdbcLogSummarizerTest.class.getName() + ".testlogs");
     private DBAppender dbAppender;
     private Server server;
-    
-    
+
     @BeforeMethod
     public void setup() throws Exception {
         server = Server.createTcpServer("-tcpDaemon", "-tcpAllowOthers");
         server.start();
         jdbcSource = new JdbcDataSource();
-        jdbcSource.setURL("jdbc:h2:tcp://localhost/mem:"  + this.getClass().getSimpleName() + ";DB_CLOSE_DELAY=-1");
-        @Cleanup Connection connection = jdbcSource.getConnection();
+        jdbcSource.setURL("jdbc:h2:tcp://localhost/mem:" + this.getClass().getSimpleName() + ";DB_CLOSE_DELAY=-1");
+        @Cleanup
+        Connection connection = jdbcSource.getConnection();
         Schema schema = new Schema();
         schema.initSchema(connection);
-        
+
 
         dbAppender = new DBAppender();
         dbAppender.setContext((LoggerContext) LoggerFactory.getILoggerFactory());
@@ -79,32 +79,32 @@ public class JdbcLogSummarizerTest {
         dbAppender.start();
         log.debug("" + connection.createStatement().executeQuery("select * from logging_event;"));
     }
-    
+
     @AfterMethod
     public void teardown() throws Exception {
         log.debug("" + jdbcSource.getConnection().createStatement().executeQuery("select * from logging_event;"));
         testLogger.detachAppender(dbAppender);
-                
+
         dbAppender.stop();
         server.stop();
     }
-    
+
     @Test
     public void summarizeByLevelEmpty() {
         JdbcLogSummarizer summy = new JdbcLogSummarizer();
         summy.setSource(jdbcSource);
         LevelSummary summary = summy.summarizeByLevel();
         assertNotNull(summary);
-        for(LogLevel level: LogLevel.values()) {
+        for (LogLevel level : LogLevel.values()) {
             assertEquals(summary.getEventCount(level), 0);
         }
     }
-    
+
     @Test
     public void summarizeByLevel() {
         JdbcLogSummarizer summy = new JdbcLogSummarizer();
         summy.setSource(jdbcSource);
-        for(int count = 0; count < 10; ++count) {
+        for (int count = 0; count < 10; ++count) {
             testLogger.debug("debug message String");
             testLogger.warn("warn message String");
             testLogger.error("error message String");
@@ -113,16 +113,16 @@ public class JdbcLogSummarizerTest {
         }
         LevelSummary summary = summy.summarizeByLevel();
         assertNotNull(summary);
-        for(LogLevel level: LogLevel.values()) {
+        for (LogLevel level : LogLevel.values()) {
             assertEquals(summary.getEventCount(level), 10);
         }
     }
-    
+
     @Test
     public void summarizeByLevelSubset() {
         JdbcLogSummarizer summy = new JdbcLogSummarizer();
         summy.setSource(jdbcSource);
-        for(int count = 0; count < 10; ++count) {
+        for (int count = 0; count < 10; ++count) {
             testLogger.debug("debug message String");
             testLogger.warn("warn message String");
             testLogger.error("error message String");
@@ -133,11 +133,67 @@ public class JdbcLogSummarizerTest {
         LevelSummary summary = summy.summarizeByLevel(levels);
         assertNotNull(summary);
         int index;
-        for(index = 0; index < 2; ++index) {
+        for (index = 0; index < 2; ++index) {
             assertEquals(summary.getEventCount(LogLevel.values()[index]), 10);
         }
-        for(; index< LogLevel.values().length; ++index) {
+        for (; index < LogLevel.values().length; ++index) {
             assertEquals(summary.getEventCount(LogLevel.values()[index]), 0);
         }
+    }
+
+    @Test
+    public void summarizeByPackage() {
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        summy.setSource(jdbcSource);
+        String baseLoggerName = testLogger.getName();
+        int count = 1;
+        int batchSize = 10;
+        Logger logOne = (Logger) LoggerFactory.getLogger(baseLoggerName + ".1");
+        Logger logTwo = (Logger) LoggerFactory.getLogger(baseLoggerName + ".2");
+        Logger logEleven = (Logger) LoggerFactory.getLogger(baseLoggerName + ".1.1");
+        for (Logger logger : new Logger[]{logOne, logTwo, logEleven, testLogger}) {
+            for (int batch = 0; batch < batchSize * count; ++batch) {
+                logger.error("error message String");
+                logger.warn("warn message String");
+                logger.info("info message String");
+                logger.debug("debug message String");
+                logger.trace("trace message String");
+            }
+            ++count;
+        }
+        PackageSummary summary = summy.summarizeByPackage();
+        assertNotNull(summary);
+        assertEquals(summary.getEventCount(logOne.getName()), 50);
+        assertEquals(summary.getEventCount(logTwo.getName()), 100);
+        assertEquals(summary.getEventCount(logEleven.getName()), 150);
+        assertEquals(summary.getEventCount(testLogger.getName()), 200);
+    }
+
+    @Test
+    public void summarizeByPackageSubset() {
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        summy.setSource(jdbcSource);
+        String baseLoggerName = testLogger.getName();
+        int count = 1;
+        int batchSize = 10;
+        Logger logOne = (Logger) LoggerFactory.getLogger(baseLoggerName + ".1");
+        Logger logTwo = (Logger) LoggerFactory.getLogger(baseLoggerName + ".2");
+        Logger logEleven = (Logger) LoggerFactory.getLogger(baseLoggerName + ".1.1");
+        for (Logger logger : new Logger[]{logOne, logTwo, logEleven, testLogger}) {
+            for (int batch = 0; batch < batchSize * count; ++batch) {
+                logger.error("error message String");
+                logger.warn("warn message String");
+                logger.info("info message String");
+                logger.debug("debug message String");
+                logger.trace("trace message String");
+            }
+            ++count;
+        }
+        PackageSummary summary = summy.summarizeByPackage(logTwo.getName(), logEleven.getName());
+        assertNotNull(summary);
+        assertEquals(summary.getEventCount(logOne.getName()), 0);
+        assertEquals(summary.getEventCount(logTwo.getName()), 100);
+        assertEquals(summary.getEventCount(logEleven.getName()), 150);
+        assertEquals(summary.getEventCount(testLogger.getName()), 0);
     }
 }
