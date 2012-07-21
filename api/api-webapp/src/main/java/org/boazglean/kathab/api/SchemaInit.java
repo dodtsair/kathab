@@ -21,28 +21,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.boazglean.kathab.api.summarization;
+package org.boazglean.kathab.api;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.sql.Connection;
+import java.sql.SQLException;
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import lombok.Cleanup;
+import lombok.extern.slf4j.Slf4j;
+import org.boazglean.kathab.api.summarization.Schema;
+import org.h2.jdbcx.JdbcDataSource;
 
 /**
  *
  * @author mpower
  */
-public class PackageSummary {
-    private Map<String, Integer> levelSummary = new HashMap<String, Integer>();
-    
-    public int getEventCount(String packageName) {
-        if(levelSummary.containsKey(packageName)) {
-            return levelSummary.get(packageName);
+@Slf4j
+public class SchemaInit implements ServletContextListener {
+
+    @Override
+    public void contextInitialized(ServletContextEvent sce) {
+        JdbcDataSource jdbcSource = new JdbcDataSource();
+        jdbcSource.setURL("jdbc:h2:mem:api-webapp;DB_CLOSE_DELAY=-1");
+        try {
+            @Cleanup
+            Connection connection = jdbcSource.getConnection();
+            Schema schema = new Schema();
+            schema.initSchema(connection);
+        } catch (SQLException e) {
+            log.info("Failed to initialize schema", e);
+            log.error("Failed to initialize schema");
         }
-        return 0;
     }
-    
-    public void setEventCount(String packageName, int eventCount) {
-        levelSummary.put(packageName, eventCount);
+
+    @Override
+    public void contextDestroyed(ServletContextEvent sce) {
     }
-    
-    
 }

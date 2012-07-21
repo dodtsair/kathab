@@ -29,12 +29,9 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.db.DBAppender;
 import ch.qos.logback.core.db.DataSourceConnectionSource;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.Arrays;
-import javax.sql.DataSource;
 import lombok.Cleanup;
 import org.h2.jdbcx.JdbcDataSource;
-import static org.mockito.Mockito.*;
 import org.slf4j.LoggerFactory;
 import static org.testng.Assert.*;
 import org.testng.annotations.AfterMethod;
@@ -88,7 +85,7 @@ public class JdbcLogSummarizerTest {
         dbAppender.stop();
         server.stop();
     }
-
+    
     @Test
     public void summarizeByLevelEmpty() {
         JdbcLogSummarizer summy = new JdbcLogSummarizer();
@@ -96,7 +93,7 @@ public class JdbcLogSummarizerTest {
         LevelSummary summary = summy.summarizeByLevel();
         assertNotNull(summary);
         for (LogLevel level : LogLevel.values()) {
-            assertEquals(summary.getEventCount(level), 0);
+            assertEquals(summary.getCount(level), 0);
         }
     }
 
@@ -114,7 +111,7 @@ public class JdbcLogSummarizerTest {
         LevelSummary summary = summy.summarizeByLevel();
         assertNotNull(summary);
         for (LogLevel level : LogLevel.values()) {
-            assertEquals(summary.getEventCount(level), 10);
+            assertEquals(summary.getCount(level), 10);
         }
     }
 
@@ -134,10 +131,10 @@ public class JdbcLogSummarizerTest {
         assertNotNull(summary);
         int index;
         for (index = 0; index < 2; ++index) {
-            assertEquals(summary.getEventCount(LogLevel.values()[index]), 10);
+            assertEquals(summary.getCount(LogLevel.values()[index]), 10);
         }
         for (; index < LogLevel.values().length; ++index) {
-            assertEquals(summary.getEventCount(LogLevel.values()[index]), 0);
+            assertEquals(summary.getCount(LogLevel.values()[index]), 0);
         }
     }
 
@@ -161,16 +158,16 @@ public class JdbcLogSummarizerTest {
             }
             ++count;
         }
-        PackageSummary summary = summy.summarizeByPackage();
+        PrefixSummary summary = summy.summarizeByPrefix();
         assertNotNull(summary);
-        assertEquals(summary.getEventCount(logOne.getName()), 50);
-        assertEquals(summary.getEventCount(logTwo.getName()), 100);
-        assertEquals(summary.getEventCount(logEleven.getName()), 150);
-        assertEquals(summary.getEventCount(testLogger.getName()), 200);
+        assertEquals(summary.getCount(logOne.getName()), 50);
+        assertEquals(summary.getCount(logTwo.getName()), 100);
+        assertEquals(summary.getCount(logEleven.getName()), 150);
+        assertEquals(summary.getCount(testLogger.getName()), 200);
     }
 
     @Test
-    public void summarizeByPackageSubset() {
+    public void summarizeByPrefixSubset() {
         JdbcLogSummarizer summy = new JdbcLogSummarizer();
         summy.setSource(jdbcSource);
         String baseLoggerName = testLogger.getName();
@@ -189,12 +186,12 @@ public class JdbcLogSummarizerTest {
             }
             ++count;
         }
-        PackageSummary summary = summy.summarizeByPackage(logTwo.getName(), logEleven.getName());
+        PrefixSummary summary = summy.summarizeByPrefix(logTwo.getName(), logEleven.getName());
         assertNotNull(summary);
-        assertEquals(summary.getEventCount(logOne.getName()), 0);
-        assertEquals(summary.getEventCount(logTwo.getName()), 100);
-        assertEquals(summary.getEventCount(logEleven.getName()), 150);
-        assertEquals(summary.getEventCount(testLogger.getName()), 0);
+        assertEquals(summary.getCount(logOne.getName()), 0);
+        assertEquals(summary.getCount(logTwo.getName()), 100);
+        assertEquals(summary.getCount(logEleven.getName()), 150);
+        assertEquals(summary.getCount(testLogger.getName()), 0);
     }
     
     @Test
@@ -217,13 +214,13 @@ public class JdbcLogSummarizerTest {
             }
             ++count;
         }
-        LevelSummary summary = summy.summarizeByPackageAndLevel(logTwo.getName(), LogLevel.values());
+        LevelSummary summary = summy.summarizeByPrefixAndLevel(logTwo.getName(), LogLevel.values());
         assertNotNull(summary);
-        assertEquals(summary.getEventCount(LogLevel.ERROR), 4);
-        assertEquals(summary.getEventCount(LogLevel.WARN), 5);
-        assertEquals(summary.getEventCount(LogLevel.INFO), 7);
-        assertEquals(summary.getEventCount(LogLevel.DEBUG), 10);
-        assertEquals(summary.getEventCount(LogLevel.TRACE), 20);
+        assertEquals(summary.getCount(LogLevel.ERROR), 4);
+        assertEquals(summary.getCount(LogLevel.WARN), 5);
+        assertEquals(summary.getCount(LogLevel.INFO), 7);
+        assertEquals(summary.getCount(LogLevel.DEBUG), 10);
+        assertEquals(summary.getCount(LogLevel.TRACE), 20);
     }
 
     @Test
@@ -246,13 +243,13 @@ public class JdbcLogSummarizerTest {
             }
             ++count;
         }
-        LevelSummary summary = summy.summarizeByPackageAndLevel(logTwo.getName(), LogLevel.ERROR, LogLevel.WARN);
+        LevelSummary summary = summy.summarizeByPrefixAndLevel(logTwo.getName(), LogLevel.ERROR, LogLevel.WARN);
         assertNotNull(summary);
-        assertEquals(summary.getEventCount(LogLevel.ERROR), 4);
-        assertEquals(summary.getEventCount(LogLevel.WARN), 5);
-        assertEquals(summary.getEventCount(LogLevel.INFO), 0);
-        assertEquals(summary.getEventCount(LogLevel.DEBUG), 0);
-        assertEquals(summary.getEventCount(LogLevel.TRACE), 0);
+        assertEquals(summary.getCount(LogLevel.ERROR), 4);
+        assertEquals(summary.getCount(LogLevel.WARN), 5);
+        assertEquals(summary.getCount(LogLevel.INFO), 0);
+        assertEquals(summary.getCount(LogLevel.DEBUG), 0);
+        assertEquals(summary.getCount(LogLevel.TRACE), 0);
     }
 
 }

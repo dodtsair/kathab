@@ -1,13 +1,3 @@
-package org.boazglean.kathab.api.summarization;
-
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.Map;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.extern.slf4j.Slf4j;
-
-
 /*
  * The MIT License
  *
@@ -31,31 +21,40 @@ import lombok.extern.slf4j.Slf4j;
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-@Data
-@Slf4j
-@EqualsAndHashCode(callSuper=true)
-public class LevelSummary extends EnumMap<LogLevel, Integer> {
+package org.boazglean.kathab.api.summarization;
 
-    public LevelSummary() {
-        super(LogLevel.class);
-    }
-    
-    public LevelSummary(Map<LogLevel, ? extends Integer> m) {
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ *
+ * @author mpower
+ */
+public class PrefixSummary extends HashMap<String, Integer> {
+
+    public PrefixSummary(Map<? extends String, ? extends Integer> m) {
         super(m);
     }
 
-    public LevelSummary(EnumMap<LogLevel, ? extends Integer> m) {
-        super(m);
+    public PrefixSummary() {
     }
-   
-    public int getCount(LogLevel level) {
-        if(containsKey(level)) {
-            return get(level);
+
+    public PrefixSummary(int initialCapacity) {
+        super(initialCapacity);
+    }
+
+    public PrefixSummary(int initialCapacity, float loadFactor) {
+        super(initialCapacity, loadFactor);
+    }
+
+    public int getCount(String prefix) {
+        if(containsKey(prefix)) {
+            return get(prefix);
         }
         return 0;
     }
 
-    public void setCount(LogLevel level, int count) {
-        put(level, count);
+    public void setCount(String prefix, int count) {
+        put(prefix, count);
     }
 }

@@ -23,6 +23,9 @@
  */
 package org.boazglean.kathab.api.summarization;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  *
  * @author mpower
@@ -32,8 +35,8 @@ public interface LogSummarizer {
     public LevelSummary summarizeByLevel();
     public LevelSummary summarizeByLevel(LogLevel... levels);
     
-    public PackageSummary summarizeByPackage();
-    public PackageSummary summarizeByPackage(String... includePrefix);
+    public PrefixSummary summarizeByPrefix();
+    public PrefixSummary summarizeByPrefix(String... includePrefix);
 
-    public Object summarizeByPackageAndLevel(String includePrefix, LogLevel... levels);
+    public LevelSummary summarizeByPrefixAndLevel(String includePrefix, LogLevel... levels);
 }

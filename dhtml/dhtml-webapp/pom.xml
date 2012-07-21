@@ -47,7 +47,7 @@
     <build>
         <finalName>${project.parent.artifactId}</finalName>
         <plugins>
-            <plugin>
+<!--            <plugin>
                 <groupId>org.codehaus.cargo</groupId>
                 <artifactId>cargo-maven2-plugin</artifactId>
                 <version>1.2.2</version>
@@ -62,8 +62,8 @@
                     <configuration>
                         <home>${project.build.directory}/jetty/home</home>
                         <properties>
-<!--                            <cargo.servlet.port>${cargo.samples.servlet.port}</cargo.servlet.port>
-                            <cargo.rmi.port>${cargo.samples.rmi.port}</cargo.rmi.port>-->
+                            <cargo.servlet.port>${cargo.samples.servlet.port}</cargo.servlet.port>
+                            <cargo.rmi.port>${cargo.samples.rmi.port}</cargo.rmi.port>
                         </properties>
                     </configuration>
                     <deployables>
@@ -77,7 +77,7 @@
                         </deployable>
                     </deployables>
                 </configuration>
-            </plugin>            
+            </plugin>            -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
