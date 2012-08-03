@@ -1,0 +1,15 @@
+/* 
+    Document   : account.css
+    Created on : Jul 23, 2012, 7:44:28 PM
+    Author     : mpower
+    Description:
+        Purpose of the stylesheet follows.
+*/
+.level-filter {
+    width: 125px;
+    height: 125px;
+}
+.prefix-filter {
+    width: 125px;
+    height: 100%;
+}
