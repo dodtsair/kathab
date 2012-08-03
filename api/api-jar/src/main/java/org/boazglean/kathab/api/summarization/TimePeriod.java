@@ -23,23 +23,27 @@
  */
 package org.boazglean.kathab.api.summarization;
 
-import java.util.List;
-import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
  * @author mpower
  */
-public interface LogSummarizer {
-    
-    public LevelSummary summarizeByLevel();
-    public LevelSummary summarizeByLevel(LogLevel... levels);
-    
-    public PrefixSummary summarizeByPrefix();
-    public PrefixSummary summarizeByPrefix(String... includePrefix);
+public enum TimePeriod {
+    SECOND(TimeUnit.MILLISECONDS.convert(1, TimeUnit.SECONDS)),
+    MINUTE(TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES)),
+    QUARTER(TimeUnit.MILLISECONDS.convert(15, TimeUnit.MINUTES)),
+    HALF(TimeUnit.MILLISECONDS.convert(30, TimeUnit.MINUTES)),
+    HOUR(TimeUnit.MILLISECONDS.convert(1, TimeUnit.HOURS)),
+    DAY(TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS));
 
-    public LevelSummary summarizeByPrefixAndLevel(String includePrefix, LogLevel... levels);
-    
-    public TimeSummary summarizeByTime();
-    public TimeSummary summarizeByTime(TimePeriod period);
+    private final long millis;
+
+    private TimePeriod(long millis) {
+        this.millis = millis;
+    }
+
+    public long getMillis() {
+        return millis;
+    }
 }

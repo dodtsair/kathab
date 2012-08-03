@@ -44,6 +44,7 @@ public class JdbcLogSummarizer implements LogSummarizer {
     private static final String summarizeByPackageQuery = "select logger_name as packageName, count(*) as eventCount from logging_event where %s GROUP BY logger_name";
     private static final String summarizeByPackageWhereFragment = "locate(?, logger_name) != 0 or ";
     private static final String summarizeByPackageAndLevelQuery = "select level_string as logLevel, count(*) as eventCount from logging_event where locate(?, logger_name) != 0 and level_string in (%s) GROUP BY level_string";
+    private static final String summarizeByTime = "select count(TIMESTMP) as eventCount, TIMESTMP / ? * ? as slice from logging_event group by slice order by eventCount;";
 
     @Override
     public LevelSummary summarizeByLevel() {
@@ -180,6 +181,40 @@ public class JdbcLogSummarizer implements LogSummarizer {
                 log.info("{}, levels: {}", error, Arrays.deepToString(levels));
                 log.info(error, ex);
             }
+        }
+        return summary;
+    }
+
+    @Override
+    public TimeSummary summarizeByTime() {
+        return this.summarizeByTime(TimePeriod.MINUTE);
+    }
+
+    @Override
+    public TimeSummary summarizeByTime(TimePeriod period) {
+        TimeSummary summary = null;
+        try {
+            @Cleanup
+            Connection connection = source.getConnection();
+            @Cleanup
+            PreparedStatement query = connection.prepareStatement(summarizeByTime);
+            query.setLong(1, period.getMillis());
+            query.setLong(2, period.getMillis());
+            ResultSet request = query.executeQuery();
+            long slice = 0;
+            summary = new TimeSummary();
+            while (request.next()) {
+                slice = request.getLong("slice");
+                int eventCount = request.getInt("eventCount");
+                summary.setCount(slice, eventCount);
+            }
+        } catch (SQLException ex) {
+            String error = "Failed to read time summary";
+            if (log.isInfoEnabled()) {
+                log.info("{}, period: {}", error, period);
+                log.info(error, ex);
+            }
+            log.error(error);
         }
         return summary;
     }

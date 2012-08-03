@@ -28,13 +28,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import java.util.regex.Pattern;
-import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import static org.mockito.Mockito.*;
-import org.slf4j.LoggerFactory;
 import static org.testng.Assert.*;
 import org.testng.annotations.Test;
 
@@ -69,9 +64,9 @@ public class ProtectedPathFilterTest {
 
     public void testConvertNull() throws Exception {
         ProtectedPathFilter instance = new ProtectedPathFilter();
-        boolean filtered = true;
+        boolean filtered;
         filtered = instance.isFiltered(null);
-        assertFalse(filtered);
+        assertTrue(filtered);
     }
 
     public void testConvertEmptyUri() throws Exception {

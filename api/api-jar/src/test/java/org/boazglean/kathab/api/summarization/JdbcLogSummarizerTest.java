@@ -28,14 +28,22 @@ import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.db.DBAppender;
 import ch.qos.logback.core.db.DataSourceConnectionSource;
+
+import java.lang.reflect.Method;
 import java.sql.Connection;
+import java.sql.Statement;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.concurrent.TimeUnit;
 import lombok.Cleanup;
 import org.h2.jdbcx.JdbcDataSource;
 import org.slf4j.LoggerFactory;
 import static org.testng.Assert.*;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import lombok.extern.slf4j.Slf4j;
 import org.h2.tools.Server;
@@ -53,11 +61,13 @@ public class JdbcLogSummarizerTest {
     private Server server;
 
     @BeforeMethod
-    public void setup() throws Exception {
+    public void setup(Method method) throws Exception {
+        String dbName = method.getDeclaringClass().getSimpleName();
+
         server = Server.createTcpServer("-tcpDaemon", "-tcpAllowOthers");
         server.start();
         jdbcSource = new JdbcDataSource();
-        jdbcSource.setURL("jdbc:h2:tcp://localhost/mem:" + this.getClass().getSimpleName() + ";DB_CLOSE_DELAY=-1");
+        jdbcSource.setURL("jdbc:h2:tcp://localhost/mem:" + dbName + ";DB_CLOSE_DELAY=-1");
         @Cleanup
         Connection connection = jdbcSource.getConnection();
         Schema schema = new Schema();
@@ -75,6 +85,7 @@ public class JdbcLogSummarizerTest {
         testLogger.addAppender(dbAppender);
         dbAppender.start();
         log.debug("" + connection.createStatement().executeQuery("select * from logging_event;"));
+        log.debug("Setup for method complete for {}", dbName);
     }
 
     @AfterMethod
@@ -251,5 +262,55 @@ public class JdbcLogSummarizerTest {
         assertEquals(summary.getCount(LogLevel.DEBUG), 0);
         assertEquals(summary.getCount(LogLevel.TRACE), 0);
     }
+    
+    @Test(dataProvider="timePeriods")
+    public void summarizeByTimePeriod(TimePeriod period) throws Exception {
+        long slice = period.getMillis();
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        summy.setSource(jdbcSource);
+        long beginning = System.currentTimeMillis() / slice * slice;
+        for (int count = 0; count < 10; ++count) {
+            long sliceStart = (beginning + slice * count);
+            for(int repeat = 0; repeat <= count; ++repeat) {
+                testLogger.info("info message String with data, count: {}, duration: {}, beginning: {}", new Object[] {count, slice, sliceStart});
+            }
+        }
+        @Cleanup
+        Connection connection = jdbcSource.getConnection();
+        @Cleanup
+        Statement query = connection.createStatement();
+        query.execute("update logging_event set TIMESTMP = CONVERT(ARG2, BIGINT);");
+        TimeSummary summary = summy.summarizeByTime(period);
 
+        assertNotNull(summary);
+        assertEquals(summary.size(), 10, "Only split them up into 9 groups: " + summary.toString());
+        long total = 0;
+        for (int count = 0; count < 10; ++count) {
+            assertTrue(summary.containsKey(beginning + slice * count));
+        }
+            for (Long key: summary.keySet()) {
+            total += summary.get(key);
+        }
+        assertEquals(total, 55);
+        SortedSet<Long> timeslices = new TreeSet<Long>();
+        timeslices.addAll(summary.keySet());
+        Integer prev = 0;
+        for(Long tail: timeslices) {
+            if(prev != 0) {
+                assertEquals(tail - prev, slice);
+            }
+        }
+    }
+
+    @DataProvider(parallel = false, name = "timePeriods")
+    public Object[][] createTimePeriods() {
+        return new Object[][] {
+                { TimePeriod.SECOND},
+                { TimePeriod.MINUTE},
+                { TimePeriod.QUARTER},
+                { TimePeriod.HALF},
+                { TimePeriod.HOUR},
+                { TimePeriod.DAY},
+        };
+    }
 }

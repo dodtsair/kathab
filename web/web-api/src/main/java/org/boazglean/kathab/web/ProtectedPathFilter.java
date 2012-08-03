@@ -56,8 +56,9 @@ public class ProtectedPathFilter implements Filter<URI> {
                     return true;
                 }
             }
+            return false;
         }
-        return false;
+        return true;
     }
     
 }

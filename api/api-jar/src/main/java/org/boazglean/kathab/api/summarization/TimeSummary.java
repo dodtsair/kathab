@@ -23,23 +23,22 @@
  */
 package org.boazglean.kathab.api.summarization;
 
-import java.util.List;
-import java.util.Map;
+import java.util.HashMap;
 
 /**
  *
  * @author mpower
  */
-public interface LogSummarizer {
-    
-    public LevelSummary summarizeByLevel();
-    public LevelSummary summarizeByLevel(LogLevel... levels);
-    
-    public PrefixSummary summarizeByPrefix();
-    public PrefixSummary summarizeByPrefix(String... includePrefix);
+public class TimeSummary extends HashMap<Long, Integer> {
 
-    public LevelSummary summarizeByPrefixAndLevel(String includePrefix, LogLevel... levels);
-    
-    public TimeSummary summarizeByTime();
-    public TimeSummary summarizeByTime(TimePeriod period);
+    public int getCount(long timeslot) {
+        if (containsKey(timeslot)) {
+            return get(timeslot);
+        }
+        return 0;
+    }
+
+    public void setCount(long timeslot, int count) {
+        put(timeslot, count);
+    }
 }

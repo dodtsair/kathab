@@ -106,6 +106,20 @@ public class LogSummarizerService extends JdbcLogSummarizer implements LogSummar
         log.debug("Call to summary, prefix: {}, levels: {}", includePrefix, levels);
         return super.summarizeByPrefixAndLevel(includePrefix, levels);
     }
-    
-    
+
+    @Override
+    @GET
+    @Path(value="/period")
+    @Produces(value="application/json")
+    public TimeSummary summarizeByTime() {
+        return super.summarizeByTime();
+    }
+
+    @Override
+    @GET
+    @Path(value="/period/{period}")
+    @Produces(value="application/json")
+    public TimeSummary summarizeByTime(@PathParam(value="period") TimePeriod period) {
+        return super.summarizeByTime(period);
+    }
 }

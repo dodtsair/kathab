@@ -99,7 +99,7 @@ public class FinalResourceServletTest {
         when(request.getContextPath()).thenReturn("/webapp");
         servlet.doGet(request, response);
         
-        ArgumentCaptor<byte[]> imageCaptor = ArgumentCaptor.forClass(byte[].class);;
+        ArgumentCaptor<byte[]> imageCaptor = ArgumentCaptor.forClass(byte[].class);
         verify(out).write(imageCaptor.capture(), anyInt(), anyInt());
         assertEquals(new String(imageCaptor.getValue()).trim(), "mark");
         

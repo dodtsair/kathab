@@ -23,23 +23,13 @@
  */
 package org.boazglean.kathab.api.summarization;
 
-import java.util.List;
-import java.util.Map;
-
 /**
  *
  * @author mpower
  */
-public interface LogSummarizer {
-    
-    public LevelSummary summarizeByLevel();
-    public LevelSummary summarizeByLevel(LogLevel... levels);
-    
-    public PrefixSummary summarizeByPrefix();
-    public PrefixSummary summarizeByPrefix(String... includePrefix);
+public class H2Fuctions {
 
-    public LevelSummary summarizeByPrefixAndLevel(String includePrefix, LogLevel... levels);
-    
-    public TimeSummary summarizeByTime();
-    public TimeSummary summarizeByTime(TimePeriod period);
+    public static long getMillis(java.sql.Timestamp ts) {
+        return ts.getTime();
+    }
 }

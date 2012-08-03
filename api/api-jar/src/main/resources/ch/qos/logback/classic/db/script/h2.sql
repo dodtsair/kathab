@@ -12,6 +12,7 @@
 DROP TABLE logging_event_exception IF EXISTS;
 DROP TABLE logging_event_property IF EXISTS;
 DROP TABLE logging_event IF EXISTS;
+DROP ALIAS TIME_MILLIS IF EXISTS;
 
 CREATE TABLE logging_event (
   timestmp BIGINT NOT NULL,
@@ -44,3 +45,7 @@ CREATE TABLE logging_event_exception (
   trace_line VARCHAR(256) NOT NULL,
   PRIMARY KEY(event_id, i),
   FOREIGN KEY (event_id) REFERENCES logging_event(event_id));
+
+
+CREATE ALIAS TIME_MILLIS FOR "org.boazglean.kathab.api.summarization.H2Fuctions.getMillis";
+
