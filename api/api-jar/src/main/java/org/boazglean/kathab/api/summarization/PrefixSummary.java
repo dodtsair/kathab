@@ -23,38 +23,69 @@
  */
 package org.boazglean.kathab.api.summarization;
 
-import java.util.HashMap;
-import java.util.Map;
+import lombok.Data;
+
+import java.util.*;
 
 /**
  *
  * @author mpower
  */
-public class PrefixSummary extends HashMap<String, Integer> {
+@Data
+public class PrefixSummary {
 
-    public PrefixSummary(Map<? extends String, ? extends Integer> m) {
-        super(m);
+    double mean;
+    double stdDeviation;
+    NavigableSet<ImmutableEntry<String, Integer>> points = new TreeSet<ImmutableEntry<String, Integer>>();
+
+    public PrefixSummary(ImmutableEntry<String, Integer>... points) {
+        for(ImmutableEntry<String, Integer> point: points) {
+            this.points.add(point);
+        }
+        mean = calcMean();
+        stdDeviation = calcStdDeviation();
     }
 
-    public PrefixSummary() {
+    public PrefixSummary(Collection<? extends ImmutableEntry<String, Integer>> points) {
+        this.points.addAll(points);
+        mean = calcMean();
+        stdDeviation = calcStdDeviation();
     }
 
-    public PrefixSummary(int initialCapacity) {
-        super(initialCapacity);
-    }
+    public PrefixSummary(Map<String, Integer> points) {
 
-    public PrefixSummary(int initialCapacity, float loadFactor) {
-        super(initialCapacity, loadFactor);
+        for(String key: points.keySet()) {
+            this.points.add(new DefaultEntry<String, Integer>(key, points.get(key)));
+        }
+        mean = calcMean();
+        stdDeviation = calcStdDeviation();
     }
 
     public int getCount(String prefix) {
-        if(containsKey(prefix)) {
-            return get(prefix);
+        ImmutableEntry<String, Integer> search = new DefaultEntry<String, Integer>(prefix, null);
+        if(points.contains(search)) {
+            return points.floor(search).getValue();
         }
         return 0;
     }
 
-    public void setCount(String prefix, int count) {
-        put(prefix, count);
+    public double calcMean() {
+        int sum = 0;
+        for(ImmutableEntry<String, Integer> point: points) {
+            sum += point.getValue();
+        }
+        return (double)sum / (double)points.size();
+
+    }
+
+    public double calcStdDeviation() {
+        double sumDevSq = 0;
+        double deviation = 0;
+        for(ImmutableEntry<String, Integer> point: points) {
+            deviation = mean - (double)point.getValue();
+            sumDevSq += deviation * deviation;
+        }
+        return Math.sqrt(sumDevSq / (double)points.size());
+
     }
 }

@@ -1,3 +1,3 @@
 $(document).ready(function() {
-    $(this).trigger("prefix", {"org.jboss.resteasy.core.SynchronousDispatcher":6,"org.jboss.resteasy.plugins.server.servlet.ConfigurationBootstrap":29,"org.boazglean.kathab.api.LogSummarizerService":12});
+    $(document).trigger("prefix", {"stdDeviation":9.392668535736915,"points":[{"value":18,"key":"org.boazglean.kathab.api.LogSummarizerService"},{"value":6,"key":"org.jboss.resteasy.core.SynchronousDispatcher"},{"value":29,"key":"org.jboss.resteasy.plugins.server.servlet.ConfigurationBootstrap"}],"mean":17.666666666666668});
 });

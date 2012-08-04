@@ -25,6 +25,8 @@ package org.boazglean.kathab.api.summarization;
 
 import java.sql.*;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import javax.sql.DataSource;
 import lombok.Cleanup;
 import lombok.Data;
@@ -121,12 +123,13 @@ public class JdbcLogSummarizer implements LogSummarizer {
                 query.setString(index, includePrefixes[index - 1]);
             }
             ResultSet request = query.executeQuery();
-            summary = new PrefixSummary();
+            Collection<ImmutableEntry<String, Integer>> set = new HashSet<ImmutableEntry<String, Integer>>();
             while (request.next()) {
                 String packageName = request.getString("PackageName");
                 int eventCount = request.getInt("eventCount");
-                summary.setCount(packageName, eventCount);
+                set.add(new DefaultEntry<String, Integer>(packageName, eventCount));
             }
+            summary = new PrefixSummary(set);
         } catch (SQLException ex) {
             String error = "Failed to read package summary";
             log.error(error);
