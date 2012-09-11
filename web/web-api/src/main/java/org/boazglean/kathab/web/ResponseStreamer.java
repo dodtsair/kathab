@@ -58,6 +58,7 @@ public class ResponseStreamer implements Converter<Boolean, HttpServletResponse>
             long lastModified = connection.getLastModified();
             resp.setHeader(HttpHeader.CONTENT_LENGTH.getSpec(), Long.toString(contentLength));
             resp.setDateHeader(HttpHeader.LAST_MODIFIED.getSpec(), lastModified);
+            resp.setDateHeader(HttpHeader.EXPIRES.getSpec(), lastModified + TimeUnit.MILLISECONDS.convert(30, TimeUnit.DAYS));
             InputStream in = connection.getInputStream();
             try {
                 OutputStream out = resp.getOutputStream();

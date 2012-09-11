@@ -30,33 +30,27 @@ $(document).ready(function() {
         }
         $(".level-filter").sparkline(pieData, {
             type: 'pie',
+            sliceColors: ['rgba(256,0,0,100)','rgba(256,256,0,100)','rgba(0,256,0,100)','rgba(0,0,256,100)','rgba(256,256,256,100)'],
             width: '100%',
             height: '100%'});
     });
     $(document).on("prefix", function(event, data) {
-        var avg = 0;
-        var count = 0;
-        var max = 0;
-        for(var dataPoint in data) {
-            avg += data[dataPoint];
-            count++;
-            if(max < data[dataPoint]) {
-                max = data[dataPoint];
-            }
-        }
-        avg = avg / count;
-        for(var dataPoint in data) {
+        data.points.sort(function(a,b) {
+            return b.value - a.value;
+        });
+        for(var dataPoint in data.points) {
             var bulletData = [];
-            bulletData.push(avg);
-            bulletData.push(data[dataPoint]);
-            bulletData.push(max);
-            bulletData.push(avg);
-            bulletData.push(avg - (max - avg));
+            bulletData.push(data.mean);
+            bulletData.push(data.points[dataPoint].value);
+            bulletData.push(data.mean + data.stdDeviation*2);
+            bulletData.push(data.mean + data.stdDeviation);
+            bulletData.push(data.mean - data.stdDeviation);
             $('.prefix-filter').append($(document.createElement('span')).html(bulletData.join()));
         }
         $('.prefix-filter span').sparkline('html', {
              type: 'bullet',
-             targetColor: 'rgba(0,0,0,0)',
+             targetColor: 'rgba(0,0,0,100)',
+             rangeColors: ['rgba(100,100,100,100)','rgba(66,66,66,100)','rgba(33,33,33,100)'],
              width: '100%',
              height: '100%'})
     });

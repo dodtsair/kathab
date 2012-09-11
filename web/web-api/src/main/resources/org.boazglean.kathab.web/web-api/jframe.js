@@ -21,15 +21,53 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-
 $(document).ready(function(){
-    $('.jframe').each(function (index, element) {
-        var element = $(element);
-        element.load(element.attr('data-src'), function () {
-            element.trigger('jframe-ready')
-        })
-    });
+    var staticattrib = {
+        "src": ["script", "iframe", "frame", "img", "input", "source", "video"],
+        "href": ["link", "a", "area", "base"],
+        "codebase": ["applet"],
+        "manifest": ["html"],
+        "formaction": ["button"],
+        "poster": ["video"],
+        "icon": ["command"],
+        "cite": ["blockquote", "del", "q", "ins"],
+        "usemap": ["input"],
+        "longdesc": ["iframe", "frame", "img"],
+        "profile": ["head"],
+        "action": ["form"],
+        "background": ["body"]
+    }
+    $('.jframe').load(function () {
+        var $jframe = $(this);
+        var $wrapper = $(document.createElement('div'));
+        $jframe.each(function() {
+            $.each(this.attributes, function(i, attrib) {
+                $wrapper.attr(attrib.name, attrib.value);
+            });
+        });
+        $wrapper.append($jframe.contents().find('body').contents().not('script'));
+        var $head = $(document.createElement('head'));
+        $head.append($jframe.contents().find('head').find('link'))
+        $.each(staticattrib, function(index, value) {
+            var attrib = index;
+            $.each(value, function() {
+                var tag = this;
+                ($wrapper, $head).find(tag + '[' + attrib + '^="."]').each(function (index) {
+                    $(this).attr(attrib, $jframe.attr("src") + "/../" + $(this).attr(attrib));
+                });
+            });
+        });
+        $('head').append($head.contents());
+        $wrapper.insertBefore($jframe);
 
+        $jframe.contents().find('script').each( function (index) {
+            var script   = document.createElement("script");
+            script.type  = "text/javascript";
+            script.src   = $jframe.attr("src") + "/../" + $(this).attr("src");
+            document.body.appendChild(script);
+        })
+        $jframe.remove();
+    });
 });
 
 
