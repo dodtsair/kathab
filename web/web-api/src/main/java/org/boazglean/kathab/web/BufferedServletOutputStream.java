@@ -1,6 +1,5 @@
 /*
  * The MIT License
- *
  * Copyright 2012 mpower.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,29 +20,49 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
 package org.boazglean.kathab.web;
 
 import lombok.Getter;
+import lombok.Setter;
+
+import javax.servlet.ServletOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
- *
- * @author mpower
+ * User: mpower
+ * Date: 9/11/12
+ * Time: 1:41 PM
  */
+@Setter
+@Getter
+public class BufferedServletOutputStream extends ServletOutputStream {
 
-public enum HttpHeader {
-    CONTENT_LENGTH("Content-Length"),
-    LAST_MODIFIED("Last-Modified"),
-    EXPIRES("Expires"),
-    ACCEPT("Accept"),
-    CONTENT_TYPE("Content-Type"),
-    CACHE_CONTROL("Cache-Control");
+    private ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
-    private HttpHeader(String spec) {
-        this.spec = spec;
+    @Override
+    public void write(byte[] b) throws IOException {
+        buffer.write(b);
     }
-    
-    @Getter
-    private String spec;
-    
-    
+
+    @Override
+    public void write(byte[] b, int off, int len) throws IOException {
+        buffer.write(b, off, len);
+    }
+
+    @Override
+    public void write(int b) throws IOException {
+        buffer.write(b);
+    }
+
+    public void writeTo(OutputStream dest) throws IOException{
+        buffer.writeTo(dest);
+    }
+
+    public int size() {
+        return buffer.size();
+    }
+
 }

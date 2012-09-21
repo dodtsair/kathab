@@ -1,4 +1,4 @@
-/*
+/* 
  * The MIT License
  *
  * Copyright 2012 mpower.
@@ -21,29 +21,20 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.boazglean.kathab.web;
-
-import lombok.Getter;
-
-/**
- *
- * @author mpower
- */
-
-public enum HttpHeader {
-    CONTENT_LENGTH("Content-Length"),
-    LAST_MODIFIED("Last-Modified"),
-    EXPIRES("Expires"),
-    ACCEPT("Accept"),
-    CONTENT_TYPE("Content-Type"),
-    CACHE_CONTROL("Cache-Control");
-
-    private HttpHeader(String spec) {
-        this.spec = spec;
-    }
-    
-    @Getter
-    private String spec;
-    
-    
-}
+$(document).ready(function(){
+    $(".site-logo .line").sparkline([5,3,4], {
+        type: 'line',
+        width: '100%',
+        height: '100%',
+        chartRangeMin: 0,
+        fillColor: undefined});
+    $(".site-logo .pie").sparkline([4,3,5], {
+        type: 'pie',
+        width: '100%',
+        height: '100%'});
+    $(".site-logo .bar").sparkline([0,5,3,4], {
+        type: 'bar',
+        width: '100%',
+        height: '100%',
+        barWidth: '41'});
+});

@@ -1,0 +1,61 @@
+/* 
+    Document   : account.css
+    Created on : Jul 23, 2012, 7:44:28 PM
+    Author     : mpower
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+root { 
+    display: block;
+}
+
+.button.primary {
+    
+}
+
+.site-logo {
+    display: inline-block;
+    position: relative;
+}
+
+.logged.out {
+    display: inline-block;
+}
+
+.logged {
+    float: right;
+}
+
+.site-logo div {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+}
+.site-logo .bar {
+    width: 125%;
+    left: -33%;
+    z-index: -4;
+
+}
+.site-logo .pie {
+    z-index: 0;
+    opacity:0.4;
+}
+
+.site-logo .line {
+    z-index: 4;
+    opacity:0.4;
+    width: 66%;
+    left: 16.5%;
+}
+
+.site-logo {
+    width: 125px;
+    height: 75px;
+    overflow: hidden;
+}
+.site-logo div {
+    width: 100%;
+    height: 100%;
+}

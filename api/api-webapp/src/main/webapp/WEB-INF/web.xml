@@ -47,4 +47,14 @@
         <servlet-name>Resteasy</servlet-name>
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
+
+    <filter>
+        <filter-name>json-event</filter-name>
+        <filter-class>org.boazglean.kathab.web.JsonEventAppender</filter-class>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>json-event</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 </web-app>

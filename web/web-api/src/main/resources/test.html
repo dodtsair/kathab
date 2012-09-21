@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title></title>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+</head>
+<body>
+<iframe class="jframe" src="./subframe.html"></iframe>
+<script >
+    $(document).ready(function(){
+        $('.jframe').load(function () {
+            var $jframe = $(this);
+            var $wrapper = $(document.createElement('div'));
+            $wrapper.append($jframe.find('body').contents());
+        });
+    });
+</script>
+</body>
+</html>
