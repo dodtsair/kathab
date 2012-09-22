@@ -48,8 +48,8 @@ public class JsonEventAppender implements Filter {
 
     private String acceptContent = "application/x-event\\+json";
     private String wrappedContent = "application/(.+\\+)?json";
-    private String header = "$(document).ready(function() {";
-    private String footer = "});";
+    private JsonEventHeader header = new JsonEventHeader();
+    private JsonEventFooter footer = new JsonEventFooter();
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -103,9 +103,9 @@ public class JsonEventAppender implements Filter {
                     responseWrapper.setHeader(headerName, httpServletResponse.getHeader(headerName));
                 }
                 if(responseWrapper.getContentType() != null && responseWrapper.getContentType().matches(wrappedContent)) {
-                    byte[] headerData = header.getBytes(Charset.forName("UTF-8"));
-                    byte[] footerData = footer.getBytes(Charset.forName("UTF-8"));
-                    JsonEventAppender.log.info("Provided content type is json, wrapping the body in the event json header and footer");
+                    byte[] headerData = header.header(httpServletRequest.getContextPath(), httpServletRequest.getRequestURI()).getBytes("UTF-8");
+                    byte[] footerData = footer.footer().getBytes("UTF-8");
+                    log.info("Provided content type is json, wrapping the body in the event json header and footer");
                     httpServletResponse.setHeader(HttpHeader.CONTENT_TYPE.getSpec(), "application/javascript");
                     httpServletResponse.setHeader(HttpHeader.CONTENT_LENGTH.getSpec(), Integer.toString(headerData.length + footerData.length + buffer.size()));
                     out.write(headerData, 0, headerData.length);
@@ -113,12 +113,12 @@ public class JsonEventAppender implements Filter {
                     out.write(footerData, 0, footerData.length);
                 }
                 else {
-                    JsonEventAppender.log.info("Provided content type is not json doing no wrapping, content type: {}", responseWrapper.getContentType());
+                    log.info("Provided content type is not json doing no wrapping, content type: {}", responseWrapper.getContentType());
                     if(out != null) {
                         httpServletResponse.setHeader(HttpHeader.CONTENT_LENGTH.getSpec(), Integer.toString(buffer.size()));
                         buffer.writeTo(out);
                     }
-                    JsonEventAppender.log.info("Completed wrapping json in an event");
+                    log.info("Completed wrapping json in an event");
                 }
             }
             else {

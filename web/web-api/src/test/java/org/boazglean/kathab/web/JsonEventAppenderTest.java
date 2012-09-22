@@ -35,11 +35,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.*;
 
 import static org.testng.Assert.*;
 import static org.mockito.Mockito.*;
+import static org.testng.Assert.assertEquals;
 
 /**
  * User: mpower
@@ -49,22 +49,13 @@ import static org.mockito.Mockito.*;
 @Slf4j
 public class JsonEventAppenderTest {
 
-    public static class Arrays {
-        public static boolean equals(byte[] first, int firstOffset, byte[] second, int secondOffset, int length) {
-            for(int offset = 0; offset < length; ++offset) {
-                if(first[offset + firstOffset] != second[offset + secondOffset]) {
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
-
     private JsonEventAppender appender;
     private HttpServletRequest mockRequest;
     private HttpServletResponse mockResponse;
     private ServletOutputStream mockOutputStream;
     private FilterChain mockFilterChain;
+    private JsonEventFooter mockFooter;
+    private JsonEventHeader mockHeader;
 
     @BeforeMethod
     public void setup() {
@@ -73,26 +64,31 @@ public class JsonEventAppenderTest {
         mockResponse = mock(HttpServletResponse.class);
         mockFilterChain = mock(FilterChain.class);
         mockOutputStream = mock(ServletOutputStream.class);
+        mockFooter = mock(JsonEventFooter.class);
+        mockHeader = mock(JsonEventHeader.class);
     }
 
     @Test
     public void testAccessors() {
-        String notEmpty = "a";
-        String headerDefault = "$(document).ready(function() {";
+        String notEmpty = "notEmpty";
+        JsonEventHeader diffHeader = new JsonEventHeader();
+        JsonEventHeader headerDefault = new JsonEventHeader();
+        diffHeader.setHeaderFormat("");
         assertEquals(appender.getHeader(), headerDefault);
         appender.setHeader(null);
         assertNull(appender.getHeader());
-        appender.setHeader(notEmpty);
-        assertEquals(appender.getHeader(), notEmpty);
+        appender.setHeader(diffHeader);
+        assertEquals(appender.getHeader(), diffHeader);
         appender.setHeader(headerDefault);
         assertEquals(appender.getHeader(), headerDefault);
 
-        String footerDefault = "});";
+        JsonEventFooter diffFooter = new JsonEventFooter();
+        JsonEventFooter footerDefault = new JsonEventFooter();
         assertEquals(appender.getFooter(), footerDefault);
         appender.setFooter(null);
         assertNull(appender.getFooter());
-        appender.setFooter(notEmpty);
-        assertEquals(appender.getFooter(), notEmpty);
+        appender.setFooter(diffFooter);
+        assertEquals(appender.getFooter(), diffFooter);
         appender.setFooter(footerDefault);
         assertEquals(appender.getFooter(), footerDefault);
 
@@ -125,6 +121,10 @@ public class JsonEventAppenderTest {
 
     @Test
     public void testEquals() {
+        JsonEventFooter emptyFooter = new JsonEventFooter();
+        emptyFooter.setFooter("");
+        JsonEventHeader emptyHeader = new JsonEventHeader();
+        emptyHeader.setHeaderFormat("");
         String empty = "";
         JsonEventAppender other = mock(JsonEventAppender.class);
         when(other.canEqual(appender)).thenReturn(true);
@@ -147,17 +147,17 @@ public class JsonEventAppenderTest {
         assertFalse(appender.equals(similar));
         appender.setFooter(null);
         assertTrue(appender.equals(similar));
-        similar.setFooter(empty);
+        similar.setFooter(emptyFooter);
         assertFalse(appender.equals(similar));
-        appender.setFooter(empty);
+        appender.setFooter(emptyFooter);
 
         similar.setHeader(null);
         assertFalse(appender.equals(similar));
         appender.setHeader(null);
         assertTrue(appender.equals(similar));
-        similar.setHeader(empty);
+        similar.setHeader(emptyHeader);
         assertFalse(appender.equals(similar));
-        appender.setHeader(empty);
+        appender.setHeader(emptyHeader);
 
         similar.setWrappedContent(null);
         assertFalse(appender.equals(similar));
@@ -170,22 +170,22 @@ public class JsonEventAppenderTest {
 
     @Test
     public void testHashCode() {
-        JsonEventAppenderTest.log.info(Integer.toHexString(appender.hashCode()));
+        log.info(Integer.toHexString(appender.hashCode()));
         appender.setHeader(null);
         appender.setFooter(null);
         appender.setAcceptContent(null);
         appender.setWrappedContent(null);
-        JsonEventAppenderTest.log.info(Integer.toHexString(appender.hashCode()));
+        log.info(Integer.toHexString(appender.hashCode()));
     }
 
     @Test
     public void testToString() {
-        JsonEventAppenderTest.log.info(appender.toString());
+        log.info(appender.toString());
         appender.setHeader(null);
         appender.setFooter(null);
         appender.setAcceptContent(null);
         appender.setWrappedContent(null);
-        JsonEventAppenderTest.log.info(appender.toString());
+        log.info(appender.toString());
     }
 
     @Test
@@ -262,18 +262,45 @@ public class JsonEventAppenderTest {
     }
 
     @Test
+    public void testChangeContentTypeViaHeaders() throws Exception {
+        final String readThroughHeader = "something";
+        when(mockRequest.getHeader(HttpHeader.ACCEPT.getSpec())).thenReturn("application/x-event+json").thenReturn(readThroughHeader);
+        when(mockRequest.getHeaders(readThroughHeader)).thenReturn(new Vector<String>(Arrays.asList(readThroughHeader)).elements());
+        when(mockRequest.getContentType()).thenReturn("application/json");
+        when(mockResponse.getOutputStream()).thenReturn(mockOutputStream);
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                HttpServletRequest request = (HttpServletRequest) invocationOnMock.getArguments()[0];
+                HttpServletResponse response = (HttpServletResponse) invocationOnMock.getArguments()[1];
+
+                assertEquals(request.getHeaders(HttpHeader.ACCEPT.getSpec()).nextElement(), "application/json");
+                assertEquals(request.getHeaders(readThroughHeader).nextElement(), readThroughHeader);
+                return null;
+            }
+        }).when(mockFilterChain).doFilter(any(ServletRequest.class), any(ServletResponse.class));
+
+        appender.doFilter(mockRequest, mockResponse, mockFilterChain);
+
+    }
+
+    @Test
     public void testWrapEvent() throws Exception {
-        final byte[] bodyData = "body".getBytes("UTF-8");
-        byte[] headerData = appender.getHeader().getBytes("UTF-8");
-        byte[] footerData = appender.getFooter().getBytes("UTF-8");
+        final String expectedBody = "body";
+        appender.setFooter(mockFooter);
+        appender.setHeader(mockHeader);
+        String expectedHeader = "jsonp(";
+        String expectedFooter = ");";
         when(mockRequest.getHeader(HttpHeader.ACCEPT.getSpec())).thenReturn("application/x-event+json");
+        when(mockHeader.header(null, null)).thenReturn(expectedHeader);
+        when(mockFooter.footer()).thenReturn(expectedFooter);
         when(mockResponse.getContentType()).thenReturn("application/json");
         when(mockResponse.getOutputStream()).thenReturn(mockOutputStream);
         doAnswer(new Answer() {
             @Override
             public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
                 HttpServletResponse response = (HttpServletResponse) invocationOnMock.getArguments()[1];
-                response.getOutputStream().write(bodyData, 0, bodyData.length);
+                response.getOutputStream().write(expectedBody.getBytes("UTF-8"), 0, expectedBody.length());
                 return null;
             }
         }).when(mockFilterChain).doFilter(any(ServletRequest.class), any(ServletResponse.class));
@@ -285,12 +312,17 @@ public class JsonEventAppenderTest {
         ArgumentCaptor<byte[]> headerCapture = ArgumentCaptor.forClass(byte[].class);
         ArgumentCaptor<byte[]> bodyCapture = ArgumentCaptor.forClass(byte[].class);
         ArgumentCaptor<byte[]> footerCapture = ArgumentCaptor.forClass(byte[].class);
-        verify(mockOutputStream).write(headerCapture.capture(), anyInt(), eq(headerData.length));
-        verify(mockOutputStream).write(bodyCapture.capture(), anyInt(), eq(bodyData.length));
-        verify(mockOutputStream).write(footerCapture.capture(), anyInt(), eq(footerData.length));
-        Arrays.equals(headerCapture.getValue(), 0, headerData, 0, headerData.length);
-        Arrays.equals(bodyCapture.getValue(), 0, headerData, 0, bodyData.length);
-        Arrays.equals(footerCapture.getValue(), 0, headerData, 0, footerData.length);
+        verify(mockOutputStream).write(headerCapture.capture(), anyInt(), eq(expectedHeader.length()));
+        verify(mockOutputStream).write(bodyCapture.capture(), anyInt(), eq(expectedBody.length()));
+        verify(mockOutputStream).write(footerCapture.capture(), anyInt(), eq(expectedFooter.length()));
+
+        String actualHeader = new String(headerCapture.getValue());
+        String actualBody = new String(bodyCapture.getValue()).trim();
+        String actualFooter = new String(footerCapture.getValue());
+
+        assertEquals(actualHeader, expectedHeader);
+        assertEquals(actualBody, expectedBody);
+        assertEquals(actualFooter, expectedFooter);
     }
 
     @Test
