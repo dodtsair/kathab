@@ -46,7 +46,7 @@ import java.util.*;
 @Slf4j
 public class JsonEventAppender implements Filter {
 
-    private String acceptContent = "application/x-event\\+json";
+    private String acceptContent = "\\*/\\*";
     private String wrappedContent = "application/(.+\\+)?json";
     private JsonEventHeader header = new JsonEventHeader();
     private JsonEventFooter footer = new JsonEventFooter();

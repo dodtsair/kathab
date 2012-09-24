@@ -235,6 +235,13 @@
             </dependency>
 
             <dependency>
+                <groupId>org.boazglean.kathab.api</groupId>
+                <artifactId>api-webapp</artifactId>
+                <type>war</type>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>org.mortbay.jetty</groupId>
                 <artifactId>servlet-api</artifactId>
                 <version>3.0.20100224</version>

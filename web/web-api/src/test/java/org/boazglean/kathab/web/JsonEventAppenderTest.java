@@ -92,7 +92,7 @@ public class JsonEventAppenderTest {
         appender.setFooter(footerDefault);
         assertEquals(appender.getFooter(), footerDefault);
 
-        String acceptDefault = "application/x-event\\+json";
+        String acceptDefault = "\\*/\\*";
         assertEquals(appender.getAcceptContent(), acceptDefault);
         appender.setAcceptContent(null);
         assertNull(appender.getAcceptContent());
@@ -211,7 +211,8 @@ public class JsonEventAppenderTest {
 
     @Test
     public void testAcceptMatch() {
-        assertTrue("application/x-event+json".matches(appender.getAcceptContent()));
+        assertTrue("*/*".matches(appender.getAcceptContent()));
+        assertFalse("application/x-event+json".matches(appender.getAcceptContent()));
         assertFalse("application/x-event+jsonp".matches(appender.getAcceptContent()));
         assertFalse("application/event+json".matches(appender.getAcceptContent()));
         assertFalse("application/x-padding+json".matches(appender.getAcceptContent()));
@@ -226,7 +227,7 @@ public class JsonEventAppenderTest {
 
     @Test
     public void testSkipWhenNotJSONResponse() throws Exception {
-        when(mockRequest.getHeader(HttpHeader.ACCEPT.getSpec())).thenReturn("application/x-event+json");
+        when(mockRequest.getHeader(HttpHeader.ACCEPT.getSpec())).thenReturn("*/*");
         when(mockResponse.getContentType()).thenReturn("text/xml");
         when(mockResponse.getOutputStream()).thenReturn(mockOutputStream);
 
@@ -241,7 +242,7 @@ public class JsonEventAppenderTest {
     @Test
     public void testChangeContentType() throws Exception {
         final String readThroughHeader = "something";
-        when(mockRequest.getHeader(HttpHeader.ACCEPT.getSpec())).thenReturn("application/x-event+json").thenReturn(readThroughHeader);
+        when(mockRequest.getHeader(HttpHeader.ACCEPT.getSpec())).thenReturn("*/*").thenReturn(readThroughHeader);
         when(mockRequest.getHeader(readThroughHeader)).thenReturn(readThroughHeader);
         when(mockRequest.getContentType()).thenReturn("application/json");
         when(mockResponse.getOutputStream()).thenReturn(mockOutputStream);
@@ -264,7 +265,7 @@ public class JsonEventAppenderTest {
     @Test
     public void testChangeContentTypeViaHeaders() throws Exception {
         final String readThroughHeader = "something";
-        when(mockRequest.getHeader(HttpHeader.ACCEPT.getSpec())).thenReturn("application/x-event+json").thenReturn(readThroughHeader);
+        when(mockRequest.getHeader(HttpHeader.ACCEPT.getSpec())).thenReturn("*/*").thenReturn(readThroughHeader);
         when(mockRequest.getHeaders(readThroughHeader)).thenReturn(new Vector<String>(Arrays.asList(readThroughHeader)).elements());
         when(mockRequest.getContentType()).thenReturn("application/json");
         when(mockResponse.getOutputStream()).thenReturn(mockOutputStream);
@@ -291,7 +292,7 @@ public class JsonEventAppenderTest {
         appender.setHeader(mockHeader);
         String expectedHeader = "jsonp(";
         String expectedFooter = ");";
-        when(mockRequest.getHeader(HttpHeader.ACCEPT.getSpec())).thenReturn("application/x-event+json");
+        when(mockRequest.getHeader(HttpHeader.ACCEPT.getSpec())).thenReturn("*/*");
         when(mockHeader.header(null, null)).thenReturn(expectedHeader);
         when(mockFooter.footer()).thenReturn(expectedFooter);
         when(mockResponse.getContentType()).thenReturn("application/json");
@@ -327,7 +328,7 @@ public class JsonEventAppenderTest {
 
     @Test
     public void testNullOutputStream() throws Exception {
-        when(mockRequest.getHeader(HttpHeader.ACCEPT.getSpec())).thenReturn("application/x-event+json");
+        when(mockRequest.getHeader(HttpHeader.ACCEPT.getSpec())).thenReturn("*/*");
         when(mockResponse.getContentType()).thenReturn("text/xml");
 
         appender.doFilter(mockRequest, mockResponse, mockFilterChain);
@@ -340,7 +341,7 @@ public class JsonEventAppenderTest {
     @Test
     public void testMultiHeader() throws Exception {
         when(mockRequest.getHeader(HttpHeader.CACHE_CONTROL.getSpec())).thenReturn("non null");
-        when(mockRequest.getHeader(HttpHeader.ACCEPT.getSpec())).thenReturn("application/x-event+json");
+        when(mockRequest.getHeader(HttpHeader.ACCEPT.getSpec())).thenReturn("*/*");
         when(mockResponse.getContentType()).thenReturn("text/xml");
         when(mockResponse.getOutputStream()).thenReturn(mockOutputStream);
 
@@ -357,7 +358,7 @@ public class JsonEventAppenderTest {
         Collection<String> headerNames = mock(Collection.class);
         Iterator<String> mockIterator = mock(Iterator.class);
         when(mockRequest.getHeader(HttpHeader.CACHE_CONTROL.getSpec())).thenReturn("non null");
-        when(mockRequest.getHeader(HttpHeader.ACCEPT.getSpec())).thenReturn("application/x-event+json");
+        when(mockRequest.getHeader(HttpHeader.ACCEPT.getSpec())).thenReturn("*/*");
         when(mockResponse.getContentType()).thenReturn("text/xml");
         when(mockResponse.getOutputStream()).thenReturn(mockOutputStream);
         when(mockResponse.getHeaderNames()).thenReturn(headerNames);

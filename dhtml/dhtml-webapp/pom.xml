@@ -15,6 +15,12 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.boazglean.kathab.api</groupId>
+            <artifactId>api-webapp</artifactId>
+            <type>war</type>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
             <groupId>org.boazglean.kathab.frame</groupId>
             <artifactId>frame-dhtml</artifactId>
         </dependency>
@@ -68,6 +74,30 @@
                         <phase>validate</phase>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.cargo</groupId>
+                <artifactId>cargo-maven2-plugin</artifactId>
+                <configuration>
+                    <deployables>
+                        <deployable>
+                            <groupId>${project.groupId}</groupId>
+                            <artifactId>${project.artifactId}</artifactId>
+                            <type>war</type>
+                            <properties>
+                                <context>${project.version.majorVersion}.${project.version.minorVersion}/${project.parent.artifactId}</context>
+                            </properties>
+                        </deployable>
+                        <deployable>
+                            <groupId>org.boazglean.kathab.api</groupId>
+                            <artifactId>api-webapp</artifactId>
+                            <type>war</type>
+                            <properties>
+                                <context>${project.version.majorVersion}.${project.version.minorVersion}/api</context>
+                            </properties>
+                        </deployable>
+                    </deployables>
+                </configuration>
             </plugin>
         </plugins>
     </build>

@@ -23,35 +23,53 @@
  */
 
 $(document).ready(function() {
-    $(document).on("level", function(event, data) {
-        var pieData = [];
-        for(var dataPoint in data) {
-            pieData.push(data[dataPoint]);
+    var prefixRender = $('.prefix-filter').compile(
+        {
+            '.prefix-entry': {
+                'point<-points' :{
+                    'span.prefix-name':'point.key',
+                    'span.prefix-bar': function(arg) {
+                        var sparkline = [];
+                        sparkline.push(arg.context.mean);
+                        sparkline.push(arg.context.points[arg.pos].value);
+                        sparkline.push(arg.context.mean + arg.context.stdDeviation*2);
+                        sparkline.push(arg.context.mean + arg.context.stdDeviation);
+                        sparkline.push(arg.context.mean - arg.context.stdDeviation);
+                        return sparkline.join();
+                    }
+                },
+                sort:function(a,b) {
+                    return b.value - a.value;
+                }
+            },
         }
-        $(".level-filter").sparkline(pieData, {
+    )
+
+    var levelRender = $('.level-filter').compile(
+    {
+        '.' : function(arg) {
+            var pieData = [];
+            for(var dataPoint in arg.context) {
+                pieData.push(arg.context[dataPoint]);
+            }
+            return pieData.join();
+        }
+    });
+
+    $(document).on("summary/level", function(event, data) {
+        $('.level-filter').replaceWith(levelRender(data));
+        $(".level-filter").sparkline('html', {
             type: 'pie',
             sliceColors: ['rgba(256,0,0,100)','rgba(256,256,0,100)','rgba(0,256,0,100)','rgba(0,0,256,100)','rgba(256,256,256,100)'],
             width: '100%',
             height: '100%'});
     });
-    $(document).on("prefix", function(event, data) {
-        data.points.sort(function(a,b) {
-            return b.value - a.value;
-        });
-        for(var dataPoint in data.points) {
-            var bulletData = [];
-            bulletData.push(data.mean);
-            bulletData.push(data.points[dataPoint].value);
-            bulletData.push(data.mean + data.stdDeviation*2);
-            bulletData.push(data.mean + data.stdDeviation);
-            bulletData.push(data.mean - data.stdDeviation);
-            $('.prefix-filter').append($(document.createElement('span')).html(bulletData.join()));
-        }
-        $('.prefix-filter span').sparkline('html', {
+    $(document).on("summary/prefix", function(event, data) {
+        $('.prefix-filter').replaceWith(prefixRender(data));
+        $('.prefix-bar').sparkline('html', {
              type: 'bullet',
              targetColor: 'rgba(0,0,0,100)',
              rangeColors: ['rgba(100,100,100,100)','rgba(66,66,66,100)','rgba(33,33,33,100)'],
-             width: '100%',
-             height: '100%'})
+             width: '100%'})
     });
 });
