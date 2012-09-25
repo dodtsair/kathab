@@ -1,3 +1,23 @@
 iframe.jframe {
-    visibility:hidden;
+    scrolling: no;
+    border: none;
+}
+
+.jframe {
+    overflow: hidden;
+}
+
+.timeline {
+    float: right;
+    width: 80%;
+    display: inline-block;
+}
+
+.control {
+    width: 20%;
+    display: inline-block;
+}
+
+.account {
+    width: 100%;
 }

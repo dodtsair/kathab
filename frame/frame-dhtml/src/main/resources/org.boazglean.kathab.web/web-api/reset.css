@@ -1,0 +1,18 @@
+/* 
+    Document   : reset
+    Created on : Jul 20, 2012, 7:01:08 PM
+    Author     : mpower
+    Description:
+        Purpose of the stylesheet follows.
+*/
+
+root { 
+    display: block;
+}
+
+jframe {
+    display:block;
+    margin:0;
+    padding:0;
+    border:0;
+}

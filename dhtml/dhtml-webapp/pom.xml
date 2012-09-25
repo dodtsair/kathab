@@ -33,6 +33,10 @@
             <artifactId>control-dhtml</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.boazglean.kathab.birdseye</groupId>
+            <artifactId>birdseye-dhtml</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.boazglean.kathab.web</groupId>
             <artifactId>web-api</artifactId>
         </dependency>

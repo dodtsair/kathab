@@ -28,7 +28,7 @@ $(document).ready(function() {
             '.prefix-entry': {
                 'point<-points' :{
                     'span.prefix-name':'point.key',
-                    'span.prefix-bar': function(arg) {
+                    'span.prefix-bar@data-values': function(arg) {
                         var sparkline = [];
                         sparkline.push(arg.context.mean);
                         sparkline.push(arg.context.points[arg.pos].value);
@@ -47,29 +47,65 @@ $(document).ready(function() {
 
     var levelRender = $('.level-filter').compile(
     {
-        '.' : function(arg) {
+        '.@data-values' : function(arg) {
+            var pieKeys = [];
             var pieData = [];
             for(var dataPoint in arg.context) {
-                pieData.push(arg.context[dataPoint]);
+                pieKeys.push(dataPoint);
+            }
+            pieKeys.sort();
+            for(var keyPos in pieKeys) {
+                pieData.push(arg.context[pieKeys[keyPos]])
             }
             return pieData.join();
         }
     });
+0
 
+
+"DEBUG"
+
+
+1
+
+
+"ERROR"
+
+
+2
+
+
+"INFO"
+
+
+3
+
+
+"TRACE"
+
+
+4
+
+
+"WARN"
     $(document).on("summary/level", function(event, data) {
         $('.level-filter').replaceWith(levelRender(data));
         $(".level-filter").sparkline('html', {
             type: 'pie',
-            sliceColors: ['rgba(256,0,0,100)','rgba(256,256,0,100)','rgba(0,256,0,100)','rgba(0,0,256,100)','rgba(256,256,256,100)'],
+            sliceColors: ['rgba(0,0,256,100)','rgba(256,0,0,100)','rgba(0,256,0,100)','rgba(256,256,256,100)','rgba(256,256,0,100)'],
             width: '100%',
-            height: '100%'});
+            height: '100%',
+            tagValuesAttribute: 'data-values',
+            });
     });
     $(document).on("summary/prefix", function(event, data) {
         $('.prefix-filter').replaceWith(prefixRender(data));
         $('.prefix-bar').sparkline('html', {
-             type: 'bullet',
-             targetColor: 'rgba(0,0,0,100)',
-             rangeColors: ['rgba(100,100,100,100)','rgba(66,66,66,100)','rgba(33,33,33,100)'],
-             width: '100%'})
+            type: 'bullet',
+            targetColor: 'rgba(0,0,0,100)',
+            rangeColors: ['rgba(100,100,100,100)','rgba(66,66,66,100)','rgba(33,33,33,100)'],
+            width: '100%',
+            tagValuesAttribute: 'data-values',
+            });
     });
 });
