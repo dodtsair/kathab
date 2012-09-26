@@ -68,6 +68,7 @@ public class JdbcLogSummarizerTest {
         server.start();
         jdbcSource = new JdbcDataSource();
         jdbcSource.setURL("jdbc:h2:tcp://localhost/mem:" + dbName + ";DB_CLOSE_DELAY=-1");
+        jdbcSource.setUser(dbName);
         @Cleanup
         Connection connection = jdbcSource.getConnection();
         Schema schema = new Schema();
@@ -123,6 +124,28 @@ public class JdbcLogSummarizerTest {
         assertNotNull(summary);
         for (LogLevel level : LogLevel.values()) {
             assertEquals(summary.getCount(level), 10);
+        }
+    }
+
+    @Test
+    public void summarizeByLevelOmitTrace() {
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        summy.setSource(jdbcSource);
+        for (int count = 0; count < 10; ++count) {
+            testLogger.debug("debug message String");
+            testLogger.warn("warn message String");
+            testLogger.error("error message String");
+            testLogger.info("info message String");
+        }
+        LevelSummary summary = summy.summarizeByLevel();
+        assertNotNull(summary);
+        for (LogLevel level : LogLevel.values()) {
+            if(level.equals(LogLevel.TRACE)) {
+                assertTrue(summary.containsKey(LogLevel.TRACE));
+            }
+            else {
+                assertEquals(summary.getCount(level), 10);
+            }
         }
     }
 

@@ -42,7 +42,8 @@ import lombok.extern.slf4j.Slf4j;
 public class JdbcLogSummarizer implements LogSummarizer {
 
     private DataSource source;
-    private static final String summarizeByLevelQuery = "select level_string as logLevel, count(*) as eventCount from logging_event where level_string in (%s) GROUP BY level_string";
+//    private static final String summarizeByLevelQuery = "select level_string as logLevel, count(*) as eventCount from logging_event where level_string in (%s) GROUP BY level_string";
+    private static final String summarizeByLevelQuery = "select C1 as logLevel, count(logging_event.level_string) as eventCount from (values%s) enum left join logging_event on logging_event.level_string = C1 GROUP BY C1";
     private static final String summarizeByPackageQuery = "select logger_name as packageName, count(*) as eventCount from logging_event where %s GROUP BY logger_name";
     private static final String summarizeByPackageWhereFragment = "locate(?, logger_name) != 0 or ";
     private static final String summarizeByPackageAndLevelQuery = "select level_string as logLevel, count(*) as eventCount from logging_event where locate(?, logger_name) != 0 and level_string in (%s) GROUP BY level_string";
@@ -61,7 +62,7 @@ public class JdbcLogSummarizer implements LogSummarizer {
             Connection connection = source.getConnection();
             StringBuilder levelSet = new StringBuilder();
             for (LogLevel level : levels) {
-                levelSet.append("?,");
+                levelSet.append("(?),");
             }
             if (levels.length != 0) {
                 levelSet.deleteCharAt(levelSet.length() - 1);
