@@ -27,8 +27,8 @@ $(document).ready(function() {
         {
             '.prefix-entry': {
                 'point<-points' :{
-                    'span.prefix-name':'point.key',
-                    'span.prefix-bar@data-values': function(arg) {
+                    'div.prefix-name':'point.key',
+                    'div.prefix-bar@data-values': function(arg) {
                         var sparkline = [];
                         sparkline.push(arg.context.mean);
                         sparkline.push(arg.context.points[arg.pos].value);
@@ -60,34 +60,6 @@ $(document).ready(function() {
             return pieData.join();
         }
     });
-0
-
-
-"DEBUG"
-
-
-1
-
-
-"ERROR"
-
-
-2
-
-
-"INFO"
-
-
-3
-
-
-"TRACE"
-
-
-4
-
-
-"WARN"
     $(document).on("summary/level", function(event, data) {
         $('.level-filter').replaceWith(levelRender(data));
         $(".level-filter").sparkline('html', {

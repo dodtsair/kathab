@@ -7,6 +7,15 @@
 }
 .prefix-filter {
     height: 100%;
+    overflow: hidden;
 }
 
+.prefix-name {
+    direction: rtl;
+    text-overflow: ellipsis;
+    text-align: left;
+}
 
+div {
+    overflow: inherit;
+}

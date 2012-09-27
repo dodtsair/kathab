@@ -10,14 +10,26 @@ iframe.jframe {
 .timeline {
     float: right;
     width: 80%;
-    display: inline-block;
+    height:100%;
 }
 
 .control {
+    float: left;
     width: 20%;
-    display: inline-block;
+    height:100%;
 }
 
 .account {
+    width: 100%;
+    height: 10%;
+}
+
+.float-container {
+    width: 100%;
+    height: 90%;
+}
+
+body,html {
+    height: 100%;
     width: 100%;
 }
