@@ -37,36 +37,45 @@ $(document).ready(function(){
         "action": ["form"],
         "background": ["body"]
     }
-    $('.jframe').load(function () {
-        var $jframe = $(this);
-        var $wrapper = $(document.createElement('div'));
-        $jframe.each(function() {
-            $.each(this.attributes, function(i, attrib) {
-                $wrapper.attr(attrib.name, attrib.value);
-            });
-        });
-        $wrapper.append($jframe.contents().find('body').contents().not('script'));
-        var $head = $(document.createElement('head'));
-        $head.append($jframe.contents().find('head').find('link'))
-        $.each(staticattrib, function(index, value) {
-            var attrib = index;
-            $.each(value, function() {
-                var tag = this;
-                ($wrapper, $head).find(tag + '[' + attrib + '^="."]').each(function (index) {
-                    $(this).attr(attrib, $jframe.attr("src") + "/../" + $(this).attr(attrib));
+    var xml = function($xmls) {
+        var xmls = "";
+        $.each($xmls, function(pos) {
+        if (window.ActiveXObject){
+            xmls = xmls + $xmls[pos].xml;
+        } else {
+            var serializer = new XMLSerializer();
+            xmls = xmls + serializer.serializeToString($xmls[pos]);
+        }
+        console.log("XML:" + xmls);
+        })
+        return xmls;
+    };
+    $('.jframe').each (function () {
+        var $wrapper = $(this);
+        var jframeSrc = $wrapper.attr("data-src")   ;
+        $.get($wrapper.attr("data-src"), "xml").done(function(data) {
+            var $jframe = $($.parseXML(data));
+            var text = $jframe.find('body').attr("id");
+            var fetchId = $jframe.find('body');
+            $.each(staticattrib, function(index, value) {
+                var attrib = index;
+                $.each(value, function() {
+                    var tag = this;
+                    $jframe.find(tag + '[' + attrib + '^="."]').each(function (index) {
+                        $(this).attr(attrib, $wrapper.attr("data-src") + "/../" + $(this).attr(attrib));
+                    });
                 });
             });
-        });
-        $('head').append($head.contents());
-        $wrapper.insertBefore($jframe);
+            $('head').append(xml($jframe.find('head').contents().not('script')));
+            $wrapper.html(xml($jframe.find('body').contents().not('script')));
 
-        $jframe.contents().find('script').each( function (index) {
-            var script   = document.createElement("script");
-            script.type  = "text/javascript";
-            script.src   = $jframe.attr("src") + "/../" + $(this).attr("src");
-            document.body.appendChild(script);
-        })
-        $jframe.remove();
+            $jframe.contents().find('script').each( function (index) {
+                var script   = document.createElement("script");
+                script.type  = "text/javascript";
+                script.src   = $(this).attr("src");
+                document.body.appendChild(script);
+            });
+        });
     });
 });
 

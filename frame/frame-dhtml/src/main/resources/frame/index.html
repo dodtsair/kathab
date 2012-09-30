@@ -1,29 +1,29 @@
-<!--
-  ~ The MIT License
-  ~ Copyright 2012 mpower.
-  ~
-  ~ Permission is hereby granted, free of charge, to any person obtaining a copy
-  ~ of this software and associated documentation files (the "Software"), to deal
-  ~ in the Software without restriction, including without limitation the rights
-  ~ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-  ~ copies of the Software, and to permit persons to whom the Software is
-  ~ furnished to do so, subject to the following conditions:
-  ~
-  ~ The above copyright notice and this permission notice shall be included in
-  ~ all copies or substantial portions of the Software.
-  ~
-  ~ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-  ~ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-  ~ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-  ~ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-  ~ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-  ~ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-  ~ THE SOFTWARE.
-  -->
 <!DOCTYPE html>
 <html>
     <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+        <!--
+        ~ The MIT License
+        ~ Copyright 2012 mpower.
+        ~
+        ~ Permission is hereby granted, free of charge, to any person obtaining a copy
+        ~ of this software and associated documentation files (the "Software"), to deal
+        ~ in the Software without restriction, including without limitation the rights
+        ~ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+        ~ copies of the Software, and to permit persons to whom the Software is
+        ~ furnished to do so, subject to the following conditions:
+        ~
+        ~ The above copyright notice and this permission notice shall be included in
+        ~ all copies or substantial portions of the Software.
+        ~
+        ~ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+        ~ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+        ~ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+        ~ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+        ~ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+        ~ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+        ~ THE SOFTWARE.
+        -->
         <title>Title of the document</title>
         <script type="text/javascript" src="../org.jquery/jquery-js/jquery.js"></script>
         <script type="text/javascript" src="../com.beebole.pure/pure-js/pure.js"></script>
@@ -31,10 +31,10 @@
         <link type="text/css" rel="stylesheet" href="./css/frame.css"/>
     </head>
 
-    <body class="body">
-        <iframe class="jframe account" sandbox="allow-same-origin" src="../account/account.html"></iframe>
-        <iframe class="jframe control" sandbox="allow-same-origin" src="../control/control.html"></iframe>
-        <iframe class="jframe timeline" sandbox="allow-same-origin" src="../birdseye/timeline.html"></iframe>
+    <body id="index" class="body">
+        <div class="jframe account" data-src="../account/account.html"></div>
+        <div class="jframe control" data-src="../control/control.html"></div>
+        <div class="jframe timeline" data-src="../birdseye/timeline.html"></div>
     </body>
 
 </html> 
