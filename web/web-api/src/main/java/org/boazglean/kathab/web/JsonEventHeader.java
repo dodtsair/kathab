@@ -41,11 +41,11 @@ import java.nio.charset.Charset;
 @Data
 public class JsonEventHeader {
 
-    private String headerFormat = "$(document).ready(function(){$(this).trigger(\"%s\",";
+    private String headerFormat = "$(document).ready(function(){console.log(\"%s\");$(this).trigger(\"%s\",";
 
     public String header(String webAppPath, String fullPath) {
         //Take the web application path off the front and include trailing /
         String eventPath = fullPath.substring(webAppPath.length() + "/".length());
-        return String.format(headerFormat, eventPath);
+        return String.format(headerFormat, eventPath, eventPath);
     }
 }

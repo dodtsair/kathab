@@ -4,6 +4,7 @@
     Author     : mpower
 */
 .level-filter {
+
 }
 .prefix-filter {
     height: 100%;
@@ -19,3 +20,17 @@
 div {
     overflow: inherit;
 }
+
+/*
+body,html {
+    height: 100%;
+    width: 100%;
+}
+*/
+
+/*
+body {
+    float: left;
+    width: 20%;
+    height: 100%;
+}*/

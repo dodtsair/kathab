@@ -53,8 +53,9 @@ $(document).ready(function(){
     $('.jframe').each (function () {
         var $wrapper = $(this);
         var jframeSrc = $wrapper.attr("data-src")   ;
-        $.get($wrapper.attr("data-src"), "xml").done(function(data) {
-            var $jframe = $($.parseXML(data));
+        console.log(jframeSrc);
+        $.get($wrapper.attr("data-src"), null, null, "xml").done(function(data) {
+            var $jframe = $(data);
             var text = $jframe.find('body').attr("id");
             var fetchId = $jframe.find('body');
             $.each(staticattrib, function(index, value) {
@@ -73,6 +74,7 @@ $(document).ready(function(){
                 var script   = document.createElement("script");
                 script.type  = "text/javascript";
                 script.src   = $(this).attr("src");
+                console.log(script.src);
                 document.body.appendChild(script);
             });
         });

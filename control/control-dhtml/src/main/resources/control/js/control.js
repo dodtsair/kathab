@@ -23,6 +23,7 @@
  */
 
 $(document).ready(function() {
+    console.log("begin control.js");
     var prefixRender = $('.prefix-filter').compile(
         {
             '.prefix-entry': {
@@ -68,7 +69,7 @@ $(document).ready(function() {
             width: '100%',
             height: '100%',
             tagValuesAttribute: 'data-values',
-            });
+        });
     });
     $(document).on("summary/prefix", function(event, data) {
         $('.prefix-filter').replaceWith(prefixRender(data));
@@ -78,6 +79,7 @@ $(document).ready(function() {
             rangeColors: ['rgba(100,100,100,100)','rgba(66,66,66,100)','rgba(33,33,33,100)'],
             width: '100%',
             tagValuesAttribute: 'data-values',
-            });
+        });
     });
+    console.log("begin control.js");
 });
