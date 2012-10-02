@@ -22,33 +22,54 @@
  * THE SOFTWARE.
  */
 
- $(document).ready(function() {
+requirejs.config({
+    baseUrl: '..',
+    shim: {
+        'com.beebole.pure/pure-js/pure': {
+            //These script dependencies should be loaded before loading
+            //pure.js
+            deps: ['org.jquery/jquery-js/jquery'],
+        },
+        'org.jquery/jquery-sparkline/jquery.sparkline': {
+            //These script dependencies should be loaded before loading
+            //pure.js
+            deps: ['org.jquery/jquery-js/jquery'],
+        },
+    }
+});
 
-     var timelineRender = $('.event-timeline').compile(
-     {
-        '.@data-values' : function(arg) {
-            var series = [];
-            var eventCounts = [];
-            for(var event in arg.context) {
-                series.push(event)
-            }
-            series.sort(function(a, b) {
-                return a - b;
-            })
-            for(var pos in series) {
-                eventCounts.push(series[pos] + ":" + arg.context[series[pos]])
-            }
-            return eventCounts.join();
-        }
-     });
+requirejs(['org.jquery/jquery-js/jquery', 'com.beebole.pure/pure-js/pure', 'org.jquery/jquery-sparkline/jquery.sparkline'],
+function   () {
 
-    $(document).on("summary/period", function(event, data) {
-        $('.event-timeline').replaceWith(timelineRender(data));
-        $('.event-timeline').sparkline('html', {
-            type: 'line',
-            width: '100%',
-            height: '100%',
-            tagValuesAttribute: 'data-values'
+     $(document).ready(function() {
+
+         var timelineRender = $('.event-timeline').compile(
+         {
+            '.@data-values' : function(arg) {
+                var series = [];
+                var eventCounts = [];
+                for(var event in arg.context) {
+                    series.push(event)
+                }
+                series.sort(function(a, b) {
+                    return a - b;
+                })
+                for(var pos in series) {
+                    eventCounts.push(series[pos] + ":" + arg.context[series[pos]])
+                }
+                return eventCounts.join();
+            }
+         });
+
+        $(document).on("summary/period", function(event, data) {
+            $('.event-timeline').replaceWith(timelineRender(data));
+            $('.event-timeline').sparkline('html', {
+                type: 'line',
+                width: '100%',
+                height: '100%',
+                tagValuesAttribute: 'data-values'
+            });
         });
-    });
- });
+        $.getScript('../../api/summary/period')
+     });
+});
