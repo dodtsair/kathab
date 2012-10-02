@@ -21,20 +21,41 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-$(document).ready(function(){
-    $(".site-logo .line").sparkline([5,3,4], {
-        type: 'line',
-        width: '100%',
-        height: '100%',
-        chartRangeMin: 0,
-        fillColor: undefined});
-    $(".site-logo .pie").sparkline([4,3,5], {
-        type: 'pie',
-        width: '100%',
-        height: '100%'});
-    $(".site-logo .bar").sparkline([0,5,3,4], {
-        type: 'bar',
-        width: '100%',
-        height: '100%',
-        barWidth: '41'});
-});
+
+ requirejs.config({
+     //By default load any module IDs from js/lib
+     baseUrl: '..',
+     shim: {
+         'com.beebole.pure/pure-js/pure': {
+             //These script dependencies should be loaded before loading
+             //pure.js
+             deps: ['org.jquery/jquery-js/jquery'],
+         },
+         'org.jquery/jquery-sparkline/jquery.sparkline': {
+             //These script dependencies should be loaded before loading
+             //pure.js
+             deps: ['org.jquery/jquery-js/jquery'],
+         },
+     }
+ });
+
+ requirejs(['org.jquery/jquery-js/jquery', 'org.jquery/jquery-sparkline/jquery.sparkline'],
+ function   () {
+    $(document).ready(function(){
+        $(".site-logo .line").sparkline([5,3,4], {
+            type: 'line',
+            width: '100%',
+            height: '100%',
+            chartRangeMin: 0,
+            fillColor: undefined});
+        $(".site-logo .pie").sparkline([4,3,5], {
+            type: 'pie',
+            width: '100%',
+            height: '100%'});
+        $(".site-logo .bar").sparkline([0,5,3,4], {
+            type: 'bar',
+            width: '100%',
+            height: '100%',
+            barWidth: '41'});
+    });
+ });
