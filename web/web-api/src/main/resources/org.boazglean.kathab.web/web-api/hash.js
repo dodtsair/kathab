@@ -1,5 +1,6 @@
 /*
  * The MIT License
+ *
  * Copyright 2012 mpower.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -21,38 +22,26 @@
  * THE SOFTWARE.
  */
 
-package org.boazglean.kathab.web;
-
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-
-import javax.servlet.*;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.nio.charset.Charset;
-
-/**
- * User: mpower
- * Date: 9/21/12
- * Time: 9:08 AM
- */
-@Data
-public class JsonEventHeader {
-
-    private String headerFormat = "$(document).ready(function(){$(this).trigger(\"%s\",";
-
-    public String header(String webAppPath, String fullPath) {
-        //Take the web application path off the front and include trailing /
-        int webAppPathLength = webAppPath.length();
-        String eventPath = fullPath.substring(webAppPathLength);
-        int appPathLength = eventPath.lastIndexOf('/');
-        if(appPathLength > 0) {
-            return String.format(headerFormat, eventPath.substring(0, appPathLength));
+$(document).ready(function(){
+    $.extend( {
+        hash: function(newHash) {
+            if(newHash == undefined) {
+                var hashObj = {};
+                var urlHash = window.location.hash.slice(1);
+                var hashes = urlHash.split('&');
+                for(var pos in hashes) {
+                    var pair = hashes[pos].split('=');
+                    hashObj[pair[0]] = pair[1];
+                }
+                return hashObj;
+            }
+            else {
+                var hash = '#';
+                for (var key in newHash) {
+                    hash = hash.concat(key, '=', newHash[key]);
+                }
+                window.location.hash = hash;
+            }
         }
-        else {
-            return String.format(headerFormat, "/");
-        }
-    }
-}
+    });
+});

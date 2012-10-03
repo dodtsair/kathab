@@ -26,23 +26,10 @@
 requirejs.config({
     //By default load any module IDs from js/lib
     baseUrl: '..',
-    shim: {
-        'com.beebole.pure/pure-js/pure': {
-            //These script dependencies should be loaded before loading
-            //pure.js
-            deps: ['org.jquery/jquery-js/jquery'],
-        },
-        'org.jquery/jquery-sparkline/jquery.sparkline': {
-            //These script dependencies should be loaded before loading
-            //pure.js
-            deps: ['org.jquery/jquery-js/jquery'],
-        },
-    }
 });
 
-requirejs(['org.jquery/jquery-js/jquery', 'com.beebole.pure/pure-js/pure', 'org.jquery/jquery-sparkline/jquery.sparkline'],
-function   () {
-    console.log("begin control.js");
+requirejs(['org.jquery/jquery-js/jquery', 'com.beebole.pure/pure-js/pure', 'org.jquery/jquery-sparkline/jquery.sparkline', 'org.boazglean.kathab.web/web-api/hash'],
+function () {
     $(document).ready(function() {
         var prefixRender = $('.prefix-filter').compile(
             {
@@ -81,7 +68,7 @@ function   () {
                 return pieData.join();
             }
         });
-        $(document).on("summary/level", function(event, data) {
+        $(document).on("/summary/level", function(event, data) {
             $('.level-filter').replaceWith(levelRender(data));
             $(".level-filter").sparkline('html', {
                 type: 'pie',
@@ -91,7 +78,7 @@ function   () {
                 tagValuesAttribute: 'data-values',
             });
         });
-        $(document).on("summary/prefix", function(event, data) {
+        $(document).on("/summary/prefix", function(event, data) {
             $('.prefix-filter').replaceWith(prefixRender(data));
             $('.prefix-bar').sparkline('html', {
                 type: 'bullet',
@@ -101,8 +88,31 @@ function   () {
                 tagValuesAttribute: 'data-values',
             });
         });
-        console.log("end control.js");
-        $.getScript('../../api/summary/level')
-        $.getScript('../../api/summary/prefix')
+        var fetchData = function() {
+            if(window.location.hash == undefined || window.location.hash.length == 0) {
+                $.getScript('../../api/summary/level/all')
+                $.getScript('../../api/summary/prefix/all')
+            }
+            else {
+                var hash = $.hash();
+                if(hash.level != undefined && hash.level.length > 0)
+                {
+                    $.getScript('../../api/summary/level/level=' + hash.level)
+                }
+                else {
+                    $.getScript('../../api/summary/level/all')
+                }
+                if(hash.prefix != undefined && hash.prefix.length > 0)
+                {
+                    $.getScript('../../api/summary/prefix/prefix=' + hash.prefix)
+                }
+                else {
+                    $.getScript('../../api/summary/prefix/all')
+                }
+            }
+        }
+
+        $(window).bind( 'hashchange', fetchData);
+        fetchData();
     });
 });

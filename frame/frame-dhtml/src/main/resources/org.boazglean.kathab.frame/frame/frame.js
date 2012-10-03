@@ -26,23 +26,6 @@
 requirejs.config({
     //By default load any module IDs the webapp root
     baseUrl: '..',
-    shim: {
-        'com.beebole.pure/pure-js/pure': {
-            //These script dependencies should be loaded before loading
-            //pure.js
-            deps: ['org.jquery/jquery-js/jquery'],
-        },
-        'org.jquery/jquery-sparkline/jquery.sparkline': {
-            //These script dependencies should be loaded before loading
-            //sparkline.js
-            deps: ['org.jquery/jquery-js/jquery'],
-        },
-        'org.boazglean.kathab.web/web-api/jframe': {
-            //These script dependencies should be loaded before loading
-            //jframe.js
-            deps: ['org.jquery/jquery-js/jquery'],
-        },
-    }
 });
 requirejs(['org.boazglean.kathab.web/web-api/jframe'],
  function   () {

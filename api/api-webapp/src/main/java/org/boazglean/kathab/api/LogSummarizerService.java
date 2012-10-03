@@ -61,7 +61,7 @@ public class LogSummarizerService extends JdbcLogSummarizer implements LogSummar
 
     @Override
     @GET
-    @Path(value="/level")
+    @Path(value="/level/all")
     @Produces(value="application/json")
     public LevelSummary summarizeByLevel() {
         log.info("Call to summary");
@@ -70,7 +70,7 @@ public class LogSummarizerService extends JdbcLogSummarizer implements LogSummar
 
     @Override
     @GET
-    @Path(value="/level/{level}")
+    @Path(value="/level/level={level}")
     @Produces(value="application/json")
     public LevelSummary summarizeByLevel(@PathParam(value="level") LogLevel... levels) {
         log.info("Call to summary");
@@ -80,7 +80,7 @@ public class LogSummarizerService extends JdbcLogSummarizer implements LogSummar
 
     @Override
     @GET
-    @Path(value="/prefix")
+    @Path(value="/prefix/all")
     @Produces(value="application/json")
     public PrefixSummary summarizeByPrefix() {
         log.info("Call to summary");
@@ -89,7 +89,7 @@ public class LogSummarizerService extends JdbcLogSummarizer implements LogSummar
 
     @Override
     @GET
-    @Path(value="/prefix/{prefix}")
+    @Path(value="/prefix/prefix={prefix}")
     @Produces(value="application/json")
     public PrefixSummary summarizeByPrefix(@PathParam(value="prefix") String... includePrefixes) {
         log.info("Call to summary");
@@ -99,7 +99,7 @@ public class LogSummarizerService extends JdbcLogSummarizer implements LogSummar
 
     @Override
     @GET
-    @Path(value="/prefix/{prefix}/level/{level}")
+    @Path(value="/prefix/level={level}&prefix={prefix}")
     @Produces(value="application/json")
     public LevelSummary summarizeByPrefixAndLevel(@PathParam(value="prefix") String includePrefix, @PathParam(value="level") LogLevel... levels) {
         log.info("Call to summary");
@@ -109,7 +109,7 @@ public class LogSummarizerService extends JdbcLogSummarizer implements LogSummar
 
     @Override
     @GET
-    @Path(value="/period")
+    @Path(value="/period/all")
     @Produces(value="application/json")
     public TimeSummary summarizeByTime() {
         return super.summarizeByTime();
@@ -117,7 +117,7 @@ public class LogSummarizerService extends JdbcLogSummarizer implements LogSummar
 
     @Override
     @GET
-    @Path(value="/period/{period}")
+    @Path(value="/period/period={period}")
     @Produces(value="application/json")
     public TimeSummary summarizeByTime(@PathParam(value="period") TimePeriod period) {
         return super.summarizeByTime(period);

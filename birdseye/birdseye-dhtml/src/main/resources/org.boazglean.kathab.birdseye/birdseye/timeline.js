@@ -24,21 +24,9 @@
 
 requirejs.config({
     baseUrl: '..',
-    shim: {
-        'com.beebole.pure/pure-js/pure': {
-            //These script dependencies should be loaded before loading
-            //pure.js
-            deps: ['org.jquery/jquery-js/jquery'],
-        },
-        'org.jquery/jquery-sparkline/jquery.sparkline': {
-            //These script dependencies should be loaded before loading
-            //pure.js
-            deps: ['org.jquery/jquery-js/jquery'],
-        },
-    }
 });
 
-requirejs(['org.jquery/jquery-js/jquery', 'com.beebole.pure/pure-js/pure', 'org.jquery/jquery-sparkline/jquery.sparkline'],
+requirejs(['org.jquery/jquery-js/jquery', 'com.beebole.pure/pure-js/pure', 'org.jquery/jquery-sparkline/jquery.sparkline','org.boazglean.kathab.web/web-api/hash'],
 function   () {
 
      $(document).ready(function() {
@@ -61,7 +49,7 @@ function   () {
             }
          });
 
-        $(document).on("summary/period", function(event, data) {
+        $(document).on("/summary/period", function(event, data) {
             $('.event-timeline').replaceWith(timelineRender(data));
             $('.event-timeline').sparkline('html', {
                 type: 'line',
@@ -70,6 +58,22 @@ function   () {
                 tagValuesAttribute: 'data-values'
             });
         });
-        $.getScript('../../api/summary/period')
+        var fetchData = function() {
+            if(window.location.hash == undefined || window.location.hash.length == 0) {
+                $.getScript('../../api/summary/period/all')
+            }
+            else {
+                var hash = $.hash();
+                if(hash.period != undefined && hash.period.length > 0)
+                {
+                    $.getScript('../../api/summary/period/period=' + hash.period)
+                }
+                else {
+                    $.getScript('../../api/summary/period/all')
+                }
+            }
+        }
+        $(window).bind( 'hashchange', fetchData);
+        fetchData();
      });
 });

@@ -51,7 +51,7 @@ public class JsonEventHeaderTest {
 
     JsonEventHeader header;
     Pattern pattern = Pattern.compile("\\$\\(document\\)\\.ready\\(function\\(\\)\\{\\$\\(this\\)\\.trigger\\(\"([^\"]+)\",");
-    String headerString = "$(document).ready(function(){$(this).trigger(\"level\",";
+    String headerString = "$(document).ready(function(){$(this).trigger(\"/level\",";
 
     @BeforeMethod
     public void setup() {
@@ -62,22 +62,38 @@ public class JsonEventHeaderTest {
     public void testPattern() {
         Matcher match = pattern.matcher(headerString);
         assertTrue(match.matches());
-        assertEquals(match.group(1), "level");
+        assertEquals(match.group(1), "/level");
     }
 
     @Test
     public void testFilter() throws Exception {
 
-        String levelPath = "level";
+        String levelPath = "/level";
+        String levelFile = "/all";
         String webAppPath = "/1.0/dhtml";
         String eventHeader = "";
 
-        eventHeader = header.header(webAppPath, webAppPath + "/" + levelPath);
+        eventHeader = header.header(webAppPath, webAppPath + levelPath + levelFile);
 
         assertEquals(eventHeader, headerString);
         Matcher match = pattern.matcher(eventHeader);
         assertTrue(match.matches());
         assertEquals(match.group(1), levelPath);
+    }
+
+    @Test
+    public void testFilterNegative() throws Exception {
+
+        String levelPath = "level";
+        String levelFile = "all";
+        String webAppPath = "/1.0/dhtml";
+        String eventHeader = "";
+
+        eventHeader = header.header(webAppPath, webAppPath + "/");
+
+        Matcher match = pattern.matcher(eventHeader);
+        assertTrue(match.matches());
+        assertEquals(match.group(1), "/");
     }
 
     @Test
