@@ -47,7 +47,7 @@ public class JdbcLogSummarizer implements LogSummarizer {
     private static final String summarizeByPackageQuery = "select logger_name as packageName, count(*) as eventCount from logging_event where %s GROUP BY logger_name";
     private static final String summarizeByPackageWhereFragment = "locate(?, logger_name) != 0 or ";
     private static final String summarizeByPackageAndLevelQuery = "select level_string as logLevel, count(*) as eventCount from logging_event where locate(?, logger_name) != 0 and level_string in (%s) GROUP BY level_string";
-    private static final String summarizeByTime = "select count(TIMESTMP) as eventCount, TIMESTMP / ? * ? as slice from logging_event group by slice order by eventCount;";
+    private static final String summarizeByTime = "select count(TIMESTMP) as eventCount, TIMESTMP / ? * ? as slice from logging_event group by slice order by slice;";
 
     @Override
     public LevelSummary summarizeByLevel() {
@@ -205,12 +205,23 @@ public class JdbcLogSummarizer implements LogSummarizer {
             query.setLong(1, period.getMillis());
             query.setLong(2, period.getMillis());
             ResultSet request = query.executeQuery();
-            long slice = 0;
+            long currentSlice = 0;
+            long prevSlice = 0;
             summary = new TimeSummary();
             while (request.next()) {
-                slice = request.getLong("slice");
+                //check for gaps in the data
+                currentSlice = request.getLong("slice");
+                if(prevSlice != 0 && currentSlice - prevSlice > period.getMillis()) {
+                    //fill in the gaps of the data
+                    for(int count = 1; count < (currentSlice - prevSlice) / period.getMillis(); ++ count)
+                    {
+                        long emptySlice = currentSlice - count * period.getMillis();
+                        summary.setCount(emptySlice, 0);
+                    }
+                }
                 int eventCount = request.getInt("eventCount");
-                summary.setCount(slice, eventCount);
+                summary.setCount(currentSlice, eventCount);
+                prevSlice = currentSlice;
             }
         } catch (SQLException ex) {
             String error = "Failed to read time summary";

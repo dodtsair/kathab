@@ -325,6 +325,51 @@ public class JdbcLogSummarizerTest {
         }
     }
 
+    @Test(dataProvider="timePeriods")
+    public void summarizeByTimePeriodGap(TimePeriod period) throws Exception {
+        long slice = period.getMillis();
+        int[] slices = new int[] {0,1,2,3,4,5,6,7,8,9};
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        summy.setSource(jdbcSource);
+        //Set up the data in the data base.
+        long beginning = System.currentTimeMillis() / slice * slice;
+        //Of a possible 10 slices we'll roll through the first four and the last three creating a gap in the middle.
+        for (int count : slices) {
+            //only select those which when divided by four are even, 0, 1, 2, 3, 8, 9,
+            if(count / 4 % 2 == 0) {
+                long sliceStart = (beginning + slice * count);
+                int addALine = 0;
+                for(int repeat = 0; repeat <= count; ++repeat) {
+                    testLogger.info("info message String with data, count: {}, duration: {}, beginning: {}", new Object[] {count, slice, sliceStart});
+                }
+            }
+        }
+        @Cleanup
+        Connection connection = jdbcSource.getConnection();
+        @Cleanup
+        Statement query = connection.createStatement();
+        //THe appender sets the timestamp to when the entry was logged.  Difficult to test against.  Instead change
+        //all the timestamps to a predefined number so that we can test against it.
+        query.execute("update logging_event set TIMESTMP = CONVERT(ARG2, BIGINT);");
+        TimeSummary summary = summy.summarizeByTime(period);
+
+        assertNotNull(summary);
+        assertEquals(summary.size(), slices.length, "Seems we did not get the right number of slices: " + summary.toString());
+        long total = 0;
+        for (int count : slices) {
+            assertTrue(summary.containsKey(beginning + slice * count), "Result does not contain key for count:" + count);
+        }
+        for (int count : slices) {
+            long sliceTimestamp = beginning + slice * count;
+            if(count /4 %2 == 0) {
+                assertEquals(count + 1, summary.getCount(sliceTimestamp));
+            }
+            else {
+                assertEquals(0, summary.getCount(sliceTimestamp));
+            }
+        }
+    }
+
     @DataProvider(parallel = false, name = "timePeriods")
     public Object[][] createTimePeriods() {
         return new Object[][] {
