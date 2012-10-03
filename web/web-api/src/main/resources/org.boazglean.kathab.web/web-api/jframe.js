@@ -46,7 +46,6 @@ $(document).ready(function(){
             var serializer = new XMLSerializer();
             xmls = xmls + serializer.serializeToString($xmls[pos]);
         }
-        console.log("XML:" + xmls);
         })
         return xmls;
     };

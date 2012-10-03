@@ -212,8 +212,10 @@ public class JsonEventAppenderTest {
     @Test
     public void testAcceptMatch() {
         assertTrue("*/*".matches(appender.getAcceptContent()));
-        assertFalse("application/x-event+json".matches(appender.getAcceptContent()));
-        assertFalse("application/x-event+jsonp".matches(appender.getAcceptContent()));
+        assertTrue("application/javascript".matches(appender.getAcceptContent()));
+        assertTrue("application/javascript, garbage".matches(appender.getAcceptContent()));
+        assertTrue("application/x-event+jsonp".matches(appender.getAcceptContent()));
+        assertTrue("application/x-event+json".matches(appender.getAcceptContent()));
         assertFalse("application/event+json".matches(appender.getAcceptContent()));
         assertFalse("application/x-padding+json".matches(appender.getAcceptContent()));
     }
