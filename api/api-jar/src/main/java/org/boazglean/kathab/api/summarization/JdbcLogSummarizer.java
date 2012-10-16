@@ -202,6 +202,7 @@ public class JdbcLogSummarizer implements LogSummarizer {
             query.setLong(6, period.getMillis());
             query.setObject(7, EnumMixin.names(levels));
             query.setObject(8, includePrefix);
+            @Cleanup
             ResultSet request = query.executeQuery();
             summary = new TimeSummary();
             while (request.next()) {
