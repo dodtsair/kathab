@@ -35,6 +35,6 @@ public interface ImmutableEntry<K,V> extends Comparable<ImmutableEntry<K,V>> {
     public K getKey();
     public V getValue();
 
-    public ImmutableEntry<K,V> withKey(K key);
-    public ImmutableEntry<K,V> withValue(V value);
+//    public ImmutableEntry<K,V> withKey(K key);
+//    public ImmutableEntry<K,V> withValue(V value);
 }

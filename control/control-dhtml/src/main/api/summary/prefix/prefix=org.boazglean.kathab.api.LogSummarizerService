@@ -1,0 +1,3 @@
+$(document).ready(function() {
+    $(document).trigger("/summary/prefix", {"stdDeviation":9.392668535736915,"points":[{"value":18,"key":"org.boazglean.kathab.api.LogSummarizerService"}],"mean":17.666666666666668});
+});

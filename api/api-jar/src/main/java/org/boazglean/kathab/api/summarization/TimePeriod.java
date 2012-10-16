@@ -37,6 +37,8 @@ public enum TimePeriod {
     HOUR(TimeUnit.MILLISECONDS.convert(1, TimeUnit.HOURS)),
     DAY(TimeUnit.MILLISECONDS.convert(1, TimeUnit.DAYS));
 
+    public static final TimePeriod DEFAULT = MINUTE;
+
     private final long millis;
 
     private TimePeriod(long millis) {

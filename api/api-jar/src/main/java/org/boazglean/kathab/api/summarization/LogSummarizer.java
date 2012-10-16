@@ -32,14 +32,21 @@ import java.util.Map;
  */
 public interface LogSummarizer {
     
-    public LevelSummary summarizeByLevel();
-    public LevelSummary summarizeByLevel(LogLevel... levels);
-    
-    public PrefixSummary summarizeByPrefix();
-    public PrefixSummary summarizeByPrefix(String... includePrefix);
+    public LevelSummary summarizeLevel();
+    public LevelSummary summarizeLevel(TimePeriod period);
+    public LevelSummary summarizeLevel(LogLevel... levels);
+    public LevelSummary summarizeLevel(long endMillis, TimePeriod period, String[] includePrefixes, LogLevel... levels);
+    public LevelSummary summarizeLevel(String... includePrefixes);
 
-    public LevelSummary summarizeByPrefixAndLevel(String includePrefix, LogLevel... levels);
-    
-    public TimeSummary summarizeByTime();
-    public TimeSummary summarizeByTime(TimePeriod period);
+    public PrefixSummary summarizePrefix();
+    public PrefixSummary summarizePrefix(TimePeriod period);
+    public PrefixSummary summarizePrefix(String... includePrefixes);
+    public PrefixSummary summarizePrefix(long endMillis, TimePeriod period, String[] includePrefixes, LogLevel... levels);
+    public PrefixSummary summarizePrefix(LogLevel... levels);
+
+    public TimeSummary summarizeTime();
+    public TimeSummary summarizeTime(TimePeriod period);
+    public TimeSummary summarizeTime(LogLevel... levels);
+    public TimeSummary summarizeTime(long endMillis, TimePeriod period, String[] includePrefixes, LogLevel... levels);
+    public TimeSummary summarizeTime(String... includePrefixes);
 }

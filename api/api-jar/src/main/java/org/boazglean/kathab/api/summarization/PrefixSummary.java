@@ -36,42 +36,40 @@ public class PrefixSummary {
 
     double mean;
     double stdDeviation;
-    NavigableSet<ImmutableEntry<String, Integer>> points = new TreeSet<ImmutableEntry<String, Integer>>();
+    Map<String, Integer> points = new LinkedHashMap<String, java.lang.Integer>();
 
-    public PrefixSummary(ImmutableEntry<String, Integer>... points) {
-        for(ImmutableEntry<String, Integer> point: points) {
-            this.points.add(point);
+    public PrefixSummary(Map.Entry<String, Integer>... points) {
+        for(Map.Entry<String, Integer> point: points) {
+            this.points.put(point.getKey(), point.getValue());
         }
         mean = calcMean();
         stdDeviation = calcStdDeviation();
     }
 
-    public PrefixSummary(Collection<? extends ImmutableEntry<String, Integer>> points) {
-        this.points.addAll(points);
+    public PrefixSummary(Collection<? extends Map.Entry<String, Integer>> points) {
+        for(Map.Entry<String, Integer> point: points) {
+            this.points.put(point.getKey(), point.getValue());
+        }
         mean = calcMean();
         stdDeviation = calcStdDeviation();
     }
 
     public PrefixSummary(Map<String, Integer> points) {
-
-        for(String key: points.keySet()) {
-            this.points.add(new DefaultEntry<String, Integer>(key, points.get(key)));
-        }
+        this.points.putAll(points);
         mean = calcMean();
         stdDeviation = calcStdDeviation();
     }
 
     public int getCount(String prefix) {
-        ImmutableEntry<String, Integer> search = new DefaultEntry<String, Integer>(prefix, null);
-        if(points.contains(search)) {
-            return points.floor(search).getValue();
+        if(points.containsKey(prefix)) {
+            return points.get(prefix);
         }
         return 0;
     }
 
     public double calcMean() {
         int sum = 0;
-        for(ImmutableEntry<String, Integer> point: points) {
+        for(Map.Entry<String, Integer> point: points.entrySet()) {
             sum += point.getValue();
         }
         return (double)sum / (double)points.size();
@@ -81,7 +79,7 @@ public class PrefixSummary {
     public double calcStdDeviation() {
         double sumDevSq = 0;
         double deviation = 0;
-        for(ImmutableEntry<String, Integer> point: points) {
+        for(Map.Entry<String, Integer> point: points.entrySet()) {
             deviation = mean - (double)point.getValue();
             sumDevSq += deviation * deviation;
         }

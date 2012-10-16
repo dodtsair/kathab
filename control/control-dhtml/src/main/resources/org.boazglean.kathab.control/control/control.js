@@ -28,87 +28,159 @@ requirejs.config({
     baseUrl: '..',
 });
 
-requirejs(['org.jquery/jquery-js/jquery', 'com.beebole.pure/pure-js/pure', 'org.jquery/jquery-sparkline/jquery.sparkline', 'org.boazglean.kathab.web/web-api/hash'],
+requirejs(['org.jquery/jquery-js/jquery',
+    'com.beebole.pure/pure-js/pure',
+    'org.jquery/jquery-sparkline/jquery.sparkline',
+    'org.boazglean.kathab.web/web-api/hash',
+    'com.jqplot/jqplot/plugins/jqplot.pieRenderer',
+    'com.jqplot/jqplot/plugins/jqplot.barRenderer',
+    'com.jqplot/jqplot/plugins/jqplot.pointLabels',
+],
 function () {
     $(document).ready(function() {
+        var levels = {
+            'TRACE': {
+                color: 'rgba(256, 256, 256, 256)',
+            },
+            'DEBUG': {
+                color: 'rgba(0, 0, 256, 256)',
+            },
+            'INFO': {
+                color: 'rgba(0, 256, 0, 256)',
+            },
+            'WARN': {
+                color: 'rgba(256, 256, 0, 256)',
+            },
+            'ERROR': {
+                color: 'rgba(256, 0, 0, 256)',
+            },
+        }
+        //Inject the data into the dom
+        //First we start with the render functions that define
+        //where in the dom the data goes
         var prefixRender = $('.prefix-filter').compile(
             {
-                '.prefix-entry': {
-                    'point<-points' :{
-                        'div.prefix-name':'point.key',
-                        'div.prefix-bar@data-values': function(arg) {
-                            var sparkline = [];
-                            sparkline.push(arg.context.mean);
-                            sparkline.push(arg.context.points[arg.pos].value);
-                            sparkline.push(arg.context.mean + arg.context.stdDeviation*2);
-                            sparkline.push(arg.context.mean + arg.context.stdDeviation);
-                            sparkline.push(arg.context.mean - arg.context.stdDeviation);
-                            return sparkline.join();
-                        }
-                    },
-                    sort:function(a,b) {
-                        return b.value - a.value;
+                '.@data-values' : function(arg) {
+                    var barData = []
+                    for(var prefix in arg.context.points) {
+                        barData.push(arg.context.points[prefix]);
                     }
+                    return JSON.stringify(barData);
                 },
-            }
-        )
+                '.@data-labels' : function(arg) {
+                    var barLabels = [];
+                    for(var prefix in arg.context.points) {
+                        barLabels.push(prefix);
+                    }
+                    return JSON.stringify(barLabels);
+                }
+            });
+
 
         var levelRender = $('.level-filter').compile(
         {
             '.@data-values' : function(arg) {
-                var pieKeys = [];
                 var pieData = [];
-                for(var dataPoint in arg.context) {
-                    pieKeys.push(dataPoint);
+                for(var level in levels) {
+                    if(arg.context[level] != undefined) {
+                            pieData.push([level, arg.context[level]]);
+                    }
                 }
-                pieKeys.sort();
-                for(var keyPos in pieKeys) {
-                    pieData.push(arg.context[pieKeys[keyPos]])
+                return JSON.stringify(pieData);
+            },
+            '.@data-colors' : function(arg) {
+                var pieColors = [];
+                for(var level in levels) {
+                    if(arg.context[level] != undefined) {
+                            pieColors.push(levels[level].color);
+                    }
                 }
-                return pieData.join();
-            }
+                return JSON.stringify(pieColors);
+            },
         });
+
+        //Then we bind to events triggered by the data loading.
         $(document).on("/summary/level", function(event, data) {
             $('.level-filter').replaceWith(levelRender(data));
-            $(".level-filter").sparkline('html', {
-                type: 'pie',
-                sliceColors: ['rgba(0,0,256,100)','rgba(256,0,0,100)','rgba(0,256,0,100)','rgba(256,256,256,100)','rgba(256,256,0,100)'],
-                width: '100%',
-                height: '100%',
-                tagValuesAttribute: 'data-values',
+
+            //Now that the data is in the dom render the graph
+            var plot = $('.level-filter').jqplot([JSON.parse($('.level-filter').attr('data-values'))],
+            {
+                seriesDefaults: {
+                    renderer: $.jqplot.PieRenderer,
+                    rendererOptions: {
+                        showDataLabels: false,
+                        dataLabels: 'label',
+                        padding: 0,
+                        shadowAlpha: 0,
+                    },
+                },
+                legend: {
+                    show: true,
+                    location: 'e',
+                },
+                title: {
+                    show: false,
+                },
+                grid: {
+                    drawBorder: false,
+                    shadow: false,
+                    background: 'rgba(256, 256, 256, 0)',
+                },
+                seriesColors: JSON.parse($('.level-filter').attr('data-colors')),
             });
         });
         $(document).on("/summary/prefix", function(event, data) {
             $('.prefix-filter').replaceWith(prefixRender(data));
-            $('.prefix-bar').sparkline('html', {
-                type: 'bullet',
-                targetColor: 'rgba(0,0,0,100)',
-                rangeColors: ['rgba(100,100,100,100)','rgba(66,66,66,100)','rgba(33,33,33,100)'],
-                width: '100%',
-                tagValuesAttribute: 'data-values',
+
+            //Now that the data is in the dom render the graph
+            var plot = $('.prefix-filter').jqplot([JSON.parse($('.prefix-filter').attr('data-values'))],
+            {
+                seriesDefaults: {
+                    renderer: $.jqplot.BarRenderer,
+                    rendererOptions: {
+                        barDirection: 'horizontal',
+                        barWidth: 15,
+                    },
+                    pointLabels: {
+                        show: true,
+                        location: 'w',
+                        labels: JSON.parse($('.prefix-filter').attr('data-labels')),
+                        edgeTolerance: -1000,
+                    },
+                },
+                grid: {
+                    drawBorder: false,
+                    shadow: false,
+                    background: 'rgba(256, 256, 256, 0)',
+                    drawGridlines: false,
+                },
+                axes : {
+                    yaxis: {
+                        showTicks: false,
+                    }
+                }
             });
         });
         var fetchData = function() {
-            if(window.location.hash == undefined || window.location.hash.length == 0) {
+            var hash = $.hash();
+            var hasLevel = hash == undefined || hash.level != undefined && hash.level.length > 0;
+            var hasPrefix = hash == undefined || hash.prefix != undefined && hash.prefix.length > 0
+            if(!hasLevel && !hasPrefix) {
                 $.getScript('../../api/summary/level/all')
                 $.getScript('../../api/summary/prefix/all')
             }
-            else {
-                var hash = $.hash();
-                if(hash.level != undefined && hash.level.length > 0)
-                {
-                    $.getScript('../../api/summary/level/level=' + hash.level)
-                }
-                else {
-                    $.getScript('../../api/summary/level/all')
-                }
-                if(hash.prefix != undefined && hash.prefix.length > 0)
-                {
-                    $.getScript('../../api/summary/prefix/prefix=' + hash.prefix)
-                }
-                else {
-                    $.getScript('../../api/summary/prefix/all')
-                }
+            else if(hasLevel && hasPrefix) {
+                $.getScript('../../api/summary/level/level=' + hash.level + '&prefix=' + hash.prefix);
+                $.getScript('../../api/summary/prefix/level=' + hash.level + '&prefix=' + hash.prefix);
+            }
+            else if(hasLevel && !hasPrefix) {
+                $.getScript('../../api/summary/level/level=' + hash.level);
+                $.getScript('../../api/summary/prefix/level=' + hash.level);
+            }
+            else if(!hasLevel && !hasPrefix) {
+                $.getScript('../../api/summary/level/prefix=' + hash.prefix);
+                $.getScript('../../api/summary/prefix/prefix=' + hash.prefix);
             }
         }
 

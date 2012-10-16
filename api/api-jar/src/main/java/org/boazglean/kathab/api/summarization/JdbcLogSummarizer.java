@@ -24,9 +24,7 @@
 package org.boazglean.kathab.api.summarization;
 
 import java.sql.*;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
+import java.util.*;
 import javax.sql.DataSource;
 import lombok.Cleanup;
 import lombok.Data;
@@ -42,125 +40,101 @@ import lombok.extern.slf4j.Slf4j;
 public class JdbcLogSummarizer implements LogSummarizer {
 
     private DataSource source;
-//    private static final String summarizeByLevelQuery = "select level_string as logLevel, count(*) as eventCount from logging_event where level_string in (%s) GROUP BY level_string";
-    private static final String summarizeByLevelQuery = "select C1 as logLevel, count(logging_event.level_string) as eventCount from (values%s) enum left join logging_event on logging_event.level_string = C1 GROUP BY C1";
-    private static final String summarizeByPackageQuery = "select logger_name as packageName, count(*) as eventCount from logging_event where %s GROUP BY logger_name";
-    private static final String summarizeByPackageWhereFragment = "locate(?, logger_name) != 0 or ";
-    private static final String summarizeByPackageAndLevelQuery = "select level_string as logLevel, count(*) as eventCount from logging_event where locate(?, logger_name) != 0 and level_string in (%s) GROUP BY level_string";
-    private static final String summarizeByTime = "select count(TIMESTMP) as eventCount, TIMESTMP / ? * ? as slice from logging_event group by slice order by slice;";
+    private static final String summarizePackageQuery =
+            "select logger_name as packageName, count(timestmp) as eventCount " +
+            "from TABLE(prefix VARCHAR(256)=?) as prefix " +
+            "left join (select logger_name, timestmp from logging_event join TABLE(level VARCHAR(256)=?) as level where logging_event.level_string = level.level) " +
+            "on locate(prefix.prefix, logger_name) != 0 " +
+            "GROUP BY logger_name order by eventCount";
+    private static final String summarizeLevelQuery =
+            "select level.level_string as logLevel, count(timestmp) as eventCount " +
+            "from TABLE(level_string VARCHAR(256)=?) as level " +
+            "left join (select level_string, timestmp from logging_event " +
+            "join TABLE(prefix VARCHAR(256)=?) as prefix where locate(prefix.prefix, logging_event.logger_name) != 0) as logging_event " +
+            "on level.level_string = logging_event.level_string GROUP BY level.level_string order by eventCount";
+    private static final String summarizeTimeQuery =
+            "SELECT range.slice as slice, count(TIMESTMP) as eventCount " +
+            "from (select CONVERT(?, BIGINT) / ? * ? - X * ? as slice FROM SYSTEM_RANGE(0,99)) as range " +
+            "left join (select TIMESTMP / ? * ? as slice, TIMESTMP from logging_event) as data " +
+            "on data.slice = range.slice group by range.slice order by range.slice";
 
     @Override
-    public LevelSummary summarizeByLevel() {
-        return summarizeByLevel(LogLevel.values());
+    public LevelSummary summarizeLevel() {
+        return summarizeLevel(System.currentTimeMillis(), TimePeriod.DEFAULT, new String[]{""}, LogLevel.values());
     }
 
     @Override
-    public LevelSummary summarizeByLevel(LogLevel... levels) {
-        LevelSummary summary = null;
-        try {
-            @Cleanup
-            Connection connection = source.getConnection();
-            StringBuilder levelSet = new StringBuilder();
-            for (LogLevel level : levels) {
-                levelSet.append("(?),");
-            }
-            if (levels.length != 0) {
-                levelSet.deleteCharAt(levelSet.length() - 1);
-            }
-            @Cleanup
-            PreparedStatement query = connection.prepareStatement(String.format(summarizeByLevelQuery, levelSet));
-            for (int index = 1; index <= levels.length; ++index) {
-                query.setString(index, levels[index - 1].name());
-            }
-            ResultSet request = query.executeQuery();
-            LogLevel level = null;
-            summary = new LevelSummary();
-            while (request.next()) {
-                try {
-                    level = LogLevel.valueOf(request.getString("logLevel"));
-                    int eventCount = request.getInt("eventCount");
-                    summary.setCount(level, eventCount);
-                } catch (IllegalArgumentException ex) {
-                    String error = "Failed to parse logLevel";
-                    log.error(error);
-                    if (log.isInfoEnabled()) {
-                        log.info("{}, level: {}", error, level);
-                        log.info(error, ex);
-                    }
-                }
-            }
-        } catch (SQLException ex) {
-            String error = "Failed to read log level summary";
-            log.error(error);
-            if (log.isInfoEnabled()) {
-                log.info("{}, levels: {}", error, Arrays.deepToString(levels));
-                log.info(error, ex);
-            }
-        }
-        return summary;
+    public LevelSummary summarizeLevel(TimePeriod period) {
+        return summarizeLevel(System.currentTimeMillis(), period, new String[] {""}, LogLevel.values());
     }
 
     @Override
-    public PrefixSummary summarizeByPrefix() {
-        return summarizeByPrefix("");
+    public LevelSummary summarizeLevel(LogLevel... levels) {
+        return summarizeLevel(System.currentTimeMillis(), TimePeriod.DEFAULT, new String[] {""}, levels);
     }
 
     @Override
-    public PrefixSummary summarizeByPrefix(String... includePrefixes) {
+    public PrefixSummary summarizePrefix() {
+        return summarizePrefix(System.currentTimeMillis(), TimePeriod.DEFAULT, new String[]{""}, LogLevel.values());
+    }
+
+    @Override
+    public PrefixSummary summarizePrefix(TimePeriod period) {
+        return summarizePrefix(System.currentTimeMillis(), period, new String[] {""}, LogLevel.values());
+    }
+
+    @Override
+    public PrefixSummary summarizePrefix(String... includePrefixes) {
+        return summarizePrefix(System.currentTimeMillis(), TimePeriod.DEFAULT, includePrefixes, LogLevel.values());
+    }
+
+    @Override
+    public PrefixSummary summarizePrefix(long endMillis, TimePeriod period, String[] includePrefixes, LogLevel... levels) {
         PrefixSummary summary = null;
         try {
             @Cleanup
             Connection connection = source.getConnection();
-            StringBuilder prefixMatch = new StringBuilder();
-            for (String prefix: includePrefixes) {
-                prefixMatch.append(summarizeByPackageWhereFragment);
-            }
-            if (includePrefixes.length != 0) {
-                prefixMatch.delete(prefixMatch.length() - "or ".length(), prefixMatch.length());
-            }
             @Cleanup
-            PreparedStatement query = connection.prepareStatement(String.format(summarizeByPackageQuery, prefixMatch.toString()));
-            for (int index = 1; index <= includePrefixes.length; ++index) {
-                query.setString(index, includePrefixes[index - 1]);
-            }
+            PreparedStatement query = connection.prepareStatement(summarizePackageQuery);
+            query.setObject(1, includePrefixes);
+            query.setObject(2, EnumMixin.names(levels));
             ResultSet request = query.executeQuery();
-            Collection<ImmutableEntry<String, Integer>> set = new HashSet<ImmutableEntry<String, Integer>>();
+            LinkedHashMap<String, Integer> values = new LinkedHashMap<String, Integer>();
+            Collection<AbstractMap.SimpleImmutableEntry<String, Integer>> set = new HashSet<AbstractMap.SimpleImmutableEntry<String, Integer>>();
             while (request.next()) {
                 String packageName = request.getString("PackageName");
                 int eventCount = request.getInt("eventCount");
-                set.add(new DefaultEntry<String, Integer>(packageName, eventCount));
+                values.put(packageName, eventCount);
+                set.add(new AbstractMap.SimpleImmutableEntry<String, Integer>(packageName, eventCount));
             }
-            summary = new PrefixSummary(set);
+            summary = new PrefixSummary(values);
         } catch (SQLException ex) {
             String error = "Failed to read package summary";
-            log.error(error);
+            log.debug(error, ex);
             if (log.isInfoEnabled()) {
                 log.info("{}, prefixes: {}", error, Arrays.deepToString(includePrefixes));
-                log.info(error, ex);
             }
+            log.error(error);
         }
         return summary;
     }
 
     @Override
-    public LevelSummary summarizeByPrefixAndLevel(String includePrefix, LogLevel... levels) {
+    public PrefixSummary summarizePrefix(LogLevel... levels) {
+        return summarizePrefix(System.currentTimeMillis(), TimePeriod.DEFAULT, new String[] {""}, levels);
+    }
+
+    @Override
+    public LevelSummary summarizeLevel(long endMillis, TimePeriod period, String[] includePrefix, LogLevel... levels) {
         LevelSummary summary = null;
         try {
             @Cleanup
             Connection connection = source.getConnection();
-            StringBuilder levelSet = new StringBuilder();
-            for (LogLevel level : levels) {
-                levelSet.append("?,");
-            }
-            if (levels.length != 0) {
-                levelSet.deleteCharAt(levelSet.length() - 1);
-            }
             @Cleanup
-            PreparedStatement query = connection.prepareStatement(String.format(summarizeByPackageAndLevelQuery, levelSet));
-            query.setString(1, includePrefix);
-            for (int index = 0; index < levels.length; ++index) {
-                query.setString(index + 2, levels[index].name());
-            }
+            PreparedStatement query = connection.prepareStatement(summarizeLevelQuery);
+            query.setObject(1, EnumMixin.names(levels));
+            query.setObject(2, includePrefix);
+            @Cleanup
             ResultSet request = query.executeQuery();
             LogLevel level = null;
             summary = new LevelSummary();
@@ -171,66 +145,78 @@ public class JdbcLogSummarizer implements LogSummarizer {
                     summary.setCount(level, eventCount);
                 } catch (IllegalArgumentException ex) {
                     String error = "Failed to parse logLevel";
-                    log.error(error);
+                    log.debug(error, ex);
                     if (log.isInfoEnabled()) {
                         log.info("{}, level: {}", error, level);
-                        log.info(error, ex);
                     }
+                    log.error(error);
                 }
             }
         } catch (SQLException ex) {
             String error = "Failed to read log level summary";
-            log.error(error);
+            log.debug(error, ex);
             if (log.isInfoEnabled()) {
                 log.info("{}, levels: {}", error, Arrays.deepToString(levels));
-                log.info(error, ex);
             }
+            log.error(error);
         }
         return summary;
     }
 
     @Override
-    public TimeSummary summarizeByTime() {
-        return this.summarizeByTime(TimePeriod.MINUTE);
+    public LevelSummary summarizeLevel(String... includePrefix) {
+        return summarizeLevel(System.currentTimeMillis(), TimePeriod.DEFAULT, includePrefix, LogLevel.values());
     }
 
     @Override
-    public TimeSummary summarizeByTime(TimePeriod period) {
+    public TimeSummary summarizeTime() {
+        return this.summarizeTime(TimePeriod.DEFAULT);
+    }
+
+    @Override
+    public TimeSummary summarizeTime(TimePeriod period) {
+        return summarizeTime(System.currentTimeMillis(), TimePeriod.DEFAULT, new String[] {""}, LogLevel.values());
+    }
+
+    @Override
+    public TimeSummary summarizeTime(LogLevel... levels) {
+        return summarizeTime(System.currentTimeMillis(), TimePeriod.DEFAULT, new String[] {""}, levels);
+    }
+
+    @Override
+    public TimeSummary summarizeTime(long endMillis, TimePeriod period, String[] includePrefix, LogLevel... levels) {
         TimeSummary summary = null;
         try {
             @Cleanup
             Connection connection = source.getConnection();
             @Cleanup
-            PreparedStatement query = connection.prepareStatement(summarizeByTime);
-            query.setLong(1, period.getMillis());
+            PreparedStatement query = connection.prepareStatement(summarizeTimeQuery);
+            query.setLong(1, endMillis);
             query.setLong(2, period.getMillis());
+            query.setLong(3, period.getMillis());
+            query.setLong(4, period.getMillis());
+            query.setLong(5, period.getMillis());
+            query.setLong(6, period.getMillis());
             ResultSet request = query.executeQuery();
-            long currentSlice = 0;
-            long prevSlice = 0;
             summary = new TimeSummary();
             while (request.next()) {
-                //check for gaps in the data
-                currentSlice = request.getLong("slice");
-                if(prevSlice != 0 && currentSlice - prevSlice > period.getMillis()) {
-                    //fill in the gaps of the data
-                    for(int count = 1; count < (currentSlice - prevSlice) / period.getMillis(); ++ count)
-                    {
-                        long emptySlice = currentSlice - count * period.getMillis();
-                        summary.setCount(emptySlice, 0);
-                    }
-                }
                 int eventCount = request.getInt("eventCount");
-                summary.setCount(currentSlice, eventCount);
-                prevSlice = currentSlice;
+                long slice = request.getLong("slice");
+                summary.setCount(slice, eventCount);
             }
         } catch (SQLException ex) {
             String error = "Failed to read time summary";
+            log.debug(error, ex);
             if (log.isInfoEnabled()) {
                 log.info("{}, period: {}", error, period);
-                log.info(error, ex);
             }
             log.error(error);
         }
         return summary;
+    }
+
+    @Override
+    public TimeSummary summarizeTime(String... includePrefix) {
+        return summarizeTime(System.currentTimeMillis(), TimePeriod.DEFAULT, includePrefix, LogLevel.values());
     }
 }

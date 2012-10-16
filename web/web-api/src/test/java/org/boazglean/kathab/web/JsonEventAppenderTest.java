@@ -92,7 +92,7 @@ public class JsonEventAppenderTest {
         appender.setFooter(footerDefault);
         assertEquals(appender.getFooter(), footerDefault);
 
-        String acceptDefault = "\\*/\\*";
+        String acceptDefault = ".*((\\*/\\*)|(application/javascript)|(application/x-event\\+json)).*";
         assertEquals(appender.getAcceptContent(), acceptDefault);
         appender.setAcceptContent(null);
         assertNull(appender.getAcceptContent());

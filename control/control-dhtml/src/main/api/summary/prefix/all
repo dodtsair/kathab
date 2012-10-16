@@ -1,0 +1,1 @@
+$(document).ready(function(){$(this).trigger("/summary/prefix",{"stdDeviation":12.295832627357937,"points":{"org.boazglean.kathab.web.JsonEventAppender":1,"org.jboss.resteasy.core.SynchronousDispatcher":1,"org.boazglean.kathab.api.LogSummarizerService":3,"org.jboss.resteasy.plugins.server.servlet.ConfigurationBootstrap":30},"mean":8.75});});

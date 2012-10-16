@@ -1,0 +1,1 @@
+    $(document).ready(function() {$(this).trigger("/summary/period", {"1348505760000":30,"1348505761000":38});});

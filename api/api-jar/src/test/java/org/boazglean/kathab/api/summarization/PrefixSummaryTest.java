@@ -37,14 +37,14 @@ public class PrefixSummaryTest {
 
     @Test
     public void testPrefixSummaryTestArray() {
-        PrefixSummary summary = new PrefixSummary(new DefaultEntry<String, Integer>("a", 0), new DefaultEntry<String, Integer>("b", 2));
+        PrefixSummary summary = new PrefixSummary(new AbstractMap.SimpleImmutableEntry<String, Integer>("a", 0), new AbstractMap.SimpleImmutableEntry<String, Integer>("b", 2));
         Assert.assertEquals(summary.getCount("a"), 0);
         Assert.assertEquals(summary.getCount("b"), 2);
     }
 
     @Test
     public void testPrefixSummaryTestCollection() {
-        PrefixSummary summary = new PrefixSummary(Arrays.asList(new DefaultEntry<String, Integer>("a", 0), new DefaultEntry<String, Integer>("b", 2)));
+        PrefixSummary summary = new PrefixSummary(Arrays.asList(new AbstractMap.SimpleImmutableEntry<String, Integer>("a", 0), new AbstractMap.SimpleImmutableEntry<String, Integer>("b", 2)));
         Assert.assertEquals(summary.getCount("a"), 0);
         Assert.assertEquals(summary.getCount("b"), 2);
     }

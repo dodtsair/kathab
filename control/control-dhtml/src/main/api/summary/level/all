@@ -1,0 +1,2 @@
+$(document).ready(function() {$(this).trigger("/summary/level", {"INFO":11,"DEBUG":32, "TRACE": 200, "ERROR": 1, "WARN":5}
+);});

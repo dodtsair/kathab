@@ -45,7 +45,7 @@ public class SchemaInit implements ServletContextListener {
         jdbcSource.setURL("jdbc:h2:mem:api-webapp;DB_CLOSE_DELAY=-1");
         try {
             @Cleanup
-            Connection connection = jdbcSource.getConnection();
+            Connection connection = jdbcSource.getConnection("apiwebapp", "password");
             Schema schema = new Schema();
             schema.initSchema(connection);
         } catch (SQLException e) {

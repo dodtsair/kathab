@@ -46,6 +46,8 @@ public class LogSummarizerService extends JdbcLogSummarizer implements LogSummar
         JdbcDataSource jdbcSource;
         jdbcSource = new JdbcDataSource();
         jdbcSource.setURL("jdbc:h2:mem:api-webapp;DB_CLOSE_DELAY=-1");
+        jdbcSource.setUser("apiwebapp");
+        jdbcSource.setPassword("password");
         this.setSource(jdbcSource);
     }
    
@@ -63,63 +65,62 @@ public class LogSummarizerService extends JdbcLogSummarizer implements LogSummar
     @GET
     @Path(value="/level/all")
     @Produces(value="application/json")
-    public LevelSummary summarizeByLevel() {
+    public LevelSummary summarizeLevel() {
         log.info("Call to summary");
-        return super.summarizeByLevel();
+        return super.summarizeLevel();
     }
 
     @Override
     @GET
     @Path(value="/level/level={level}")
     @Produces(value="application/json")
-    public LevelSummary summarizeByLevel(@PathParam(value="level") LogLevel... levels) {
+    public LevelSummary summarizeLevel(@PathParam(value="level") LogLevel... levels) {
         log.info("Call to summary");
         log.debug("Call to summary, levels: {}", levels);
-        return super.summarizeByLevel(levels);
+        return super.summarizeLevel(levels);
     }
 
     @Override
     @GET
     @Path(value="/prefix/all")
     @Produces(value="application/json")
-    public PrefixSummary summarizeByPrefix() {
+    public PrefixSummary summarizePrefix() {
         log.info("Call to summary");
-        return super.summarizeByPrefix();
+        return super.summarizePrefix();
     }
 
     @Override
     @GET
     @Path(value="/prefix/prefix={prefix}")
     @Produces(value="application/json")
-    public PrefixSummary summarizeByPrefix(@PathParam(value="prefix") String... includePrefixes) {
+    public PrefixSummary summarizePrefix(@PathParam(value="prefix") String... includePrefixes) {
         log.info("Call to summary");
         log.debug("Call to summary, prefixes: {}", includePrefixes);
-        return super.summarizeByPrefix(includePrefixes);
+        return super.summarizePrefix(includePrefixes);
     }
 
-    @Override
     @GET
     @Path(value="/prefix/level={level}&prefix={prefix}")
     @Produces(value="application/json")
-    public LevelSummary summarizeByPrefixAndLevel(@PathParam(value="prefix") String includePrefix, @PathParam(value="level") LogLevel... levels) {
+    public LevelSummary summarizeLevel(@PathParam(value="prefix") String includePrefix, @PathParam(value="level") LogLevel... levels) {
         log.info("Call to summary");
         log.debug("Call to summary, prefix: {}, levels: {}", includePrefix, levels);
-        return super.summarizeByPrefixAndLevel(includePrefix, levels);
+        return super.summarizeLevel(System.currentTimeMillis(), TimePeriod.DEFAULT, new String[] {includePrefix}, levels);
     }
 
     @Override
     @GET
     @Path(value="/period/all")
     @Produces(value="application/json")
-    public TimeSummary summarizeByTime() {
-        return super.summarizeByTime();
+    public TimeSummary summarizeTime() {
+        return super.summarizeTime();
     }
 
     @Override
     @GET
     @Path(value="/period/period={period}")
     @Produces(value="application/json")
-    public TimeSummary summarizeByTime(@PathParam(value="period") TimePeriod period) {
-        return super.summarizeByTime(period);
+    public TimeSummary summarizeTime(@PathParam(value="period") TimePeriod period) {
+        return super.summarizeTime(period);
     }
 }

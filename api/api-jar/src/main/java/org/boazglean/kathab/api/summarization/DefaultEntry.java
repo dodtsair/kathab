@@ -24,7 +24,6 @@
 package org.boazglean.kathab.api.summarization;
 
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 /**
  * User: mpower
@@ -47,13 +46,13 @@ public class DefaultEntry<K extends Comparable<K>, V> implements ImmutableEntry<
     }
 
 
-    @Override
-    public ImmutableEntry<K, V> withValue(V value) {
-        return new DefaultEntry<K, V>(this.getKey(), value);
-    }
-
-    @Override
-    public ImmutableEntry<K, V> withKey(K key) {
-        return new DefaultEntry<K, V>(key, this.value);
-    }
+//    @Override
+//    public ImmutableEntry<K, V> withValue(V value) {
+//        return new DefaultEntry<K, V>(this.getKey(), value);
+//    }
+//
+//    @Override
+//    public ImmutableEntry<K, V> withKey(K key) {
+//        return new DefaultEntry<K, V>(key, this.value);
+//    }
 }

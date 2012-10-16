@@ -20,5 +20,25 @@ requirejs.config({
             //hash.js
             deps: ['org.jquery/jquery-js/jquery'],
         },
+        'com.jqplot/jqplot/jquery.jqplot': {
+            //These script dependencies should be loaded before loading
+            //jqplot.js
+            deps: ['org.jquery/jquery-js/jquery'],
+        },
+        'com.jqplot/jqplot/plugins/jqplot.pieRenderer': {
+            //These script dependencies should be loaded before loading
+            //jqplot.js
+            deps: ['com.jqplot/jqplot/jquery.jqplot'],
+        },
+        'com.jqplot/jqplot/plugins/jqplot.barRenderer': {
+            //These script dependencies should be loaded before loading
+            //jqplot.js
+            deps: ['com.jqplot/jqplot/jquery.jqplot'],
+        },
+        'com.jqplot/jqplot/plugins/jqplot.pointLabels': {
+            //These script dependencies should be loaded before loading
+            //jqplot.js
+            deps: ['com.jqplot/jqplot/jquery.jqplot'],
+        },
     }
 });

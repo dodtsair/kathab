@@ -24,12 +24,13 @@
 package org.boazglean.kathab.api.summarization;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 /**
  *
  * @author mpower
  */
-public class TimeSummary extends HashMap<Long, Integer> {
+public class TimeSummary extends LinkedHashMap<Long, Integer> {
 
     public int getCount(long timeslot) {
         if (containsKey(timeslot)) {

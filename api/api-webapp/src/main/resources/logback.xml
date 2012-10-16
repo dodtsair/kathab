@@ -37,8 +37,8 @@ THE SOFTWARE.
                 <param name="URL" value="jdbc:h2:mem:api-webapp;DB_CLOSE_DELAY=-1"/>
             </dataSource>
        
-            <user></user>
-            <password></password>
+            <user>apiwebapp</user>
+            <password>password</password>
         </connectionSource>
     </appender>
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">

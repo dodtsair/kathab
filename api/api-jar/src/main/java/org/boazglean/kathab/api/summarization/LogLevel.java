@@ -33,4 +33,8 @@ public enum LogLevel {
     INFO,
     DEBUG,
     TRACE;
+
+    public static String[] names() {
+        return EnumMixin.names(LogLevel.values());
+    }
 }
