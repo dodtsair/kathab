@@ -55,8 +55,11 @@ public class JdbcLogSummarizer implements LogSummarizer {
     private static final String summarizeTimeQuery =
             "SELECT range.slice as slice, count(TIMESTMP) as eventCount " +
             "from (select CONVERT(?, BIGINT) / ? * ? - X * ? as slice FROM SYSTEM_RANGE(0,99)) as range " +
-            "left join (select TIMESTMP / ? * ? as slice, TIMESTMP from logging_event) as data " +
-            "on data.slice = range.slice group by range.slice order by range.slice";
+            "left join (select TIMESTMP / ? * ? as slice, TIMESTMP from logging_event " +
+            "join TABLE(level VARCHAR(256)=?) as level " +
+            "join TABLE(prefix VARCHAR(256)=?) as prefix " +
+            "where logging_event.level_string = level.level and locate(prefix.prefix, logging_event.logger_name) != 0) " +
+            "as data on data.slice = range.slice group by range.slice order by range.slice";
 
     @Override
     public LevelSummary summarizeLevel() {
@@ -197,6 +200,8 @@ public class JdbcLogSummarizer implements LogSummarizer {
             query.setLong(4, period.getMillis());
             query.setLong(5, period.getMillis());
             query.setLong(6, period.getMillis());
+            query.setObject(7, EnumMixin.names(levels));
+            query.setObject(8, includePrefix);
             ResultSet request = query.executeQuery();
             summary = new TimeSummary();
             while (request.next()) {

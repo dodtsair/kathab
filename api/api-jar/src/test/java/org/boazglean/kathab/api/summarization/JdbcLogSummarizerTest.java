@@ -353,7 +353,7 @@ public class JdbcLogSummarizerTest {
     }
 
     @Test
-    public void summarizeByTimePeriod() throws Exception {
+    public void summarizeByTimePeriodDefaults() throws Exception {
         //Just make sure it doesn't blow up.
         JdbcLogSummarizer summy = new JdbcLogSummarizer();
         summy.setSource(jdbcSource);
@@ -450,6 +450,63 @@ public class JdbcLogSummarizerTest {
                 assertEquals(0, summary.getCount(sliceTimestamp));
             }
         }
+    }
+
+    @Test
+    public void summarizeByPeriodFilterLevel() throws Exception {
+        TimePeriod period = TimePeriod.DAY;
+        long slice = period.getMillis();
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        summy.setSource(jdbcSource);
+        long beginning = System.currentTimeMillis() / slice * slice;
+        testLogger.trace("Test log, at timestamp: {}", new Object[] {beginning});
+        testLogger.info("Test log, at timestamp: {}", new Object[] {beginning});
+        testLogger.debug("Test log, at timestamp: {}", new Object[] {beginning});
+        testLogger.warn("Test log, at timestamp: {}", new Object[] {beginning});
+        testLogger.error("Test log, at timestamp: {}", new Object[] {beginning});
+        @Cleanup
+        Connection connection = jdbcSource.getConnection();
+        @Cleanup
+        Statement query = connection.createStatement();
+        //The appender sets the timestamp to when the entry was logged.  Difficult to test against.  Instead change
+        //all the timestamps to a predefined number so that we can test against it.
+        query.execute("update logging_event set TIMESTMP = CONVERT(ARG0, BIGINT);");
+        TimeSummary summary = summy.summarizeTime(beginning, period, new String[] {""}, LogLevel.WARN, LogLevel.ERROR);
+
+        assertNotNull(summary);
+        assertEquals(summary.size(), 100);
+        assertEquals(summary.getCount(beginning), 2);
+    }
+
+    @Test
+    public void summarizeByPeriodFilterPrefix() throws Exception {
+        TimePeriod period = TimePeriod.DAY;
+        long slice = period.getMillis();
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        summy.setSource(jdbcSource);
+        long beginning = System.currentTimeMillis() / slice * slice;
+
+        String baseLoggerName = testLogger.getName();
+        Logger logOne = (Logger) LoggerFactory.getLogger(baseLoggerName + ".1");
+        Logger logTwo = (Logger) LoggerFactory.getLogger(baseLoggerName + ".2");
+        Logger logEleven = (Logger) LoggerFactory.getLogger(baseLoggerName + ".1.1");
+
+        logOne.info("Test log, at timestamp: {}", new Object[] {beginning});
+        logTwo.info("Test log, at timestamp: {}", new Object[] {beginning});
+        logEleven.info("Test log, at timestamp: {}", new Object[] {beginning});
+        testLogger.info("Test log, at timestamp: {}", new Object[] {beginning});
+        @Cleanup
+        Connection connection = jdbcSource.getConnection();
+        @Cleanup
+        Statement query = connection.createStatement();
+        //The appender sets the timestamp to when the entry was logged.  Difficult to test against.  Instead change
+        //all the timestamps to a predefined number so that we can test against it.
+        query.execute("update logging_event set TIMESTMP = CONVERT(ARG0, BIGINT);");
+
+        TimeSummary summary = summy.summarizeTime(beginning, period, new String[] {logEleven.getName(), logTwo.getName()}, LogLevel.values());
+        assertNotNull(summary);
+        assertEquals(summary.size(), 100);
+        assertEquals(summary.getCount(beginning), 2);
     }
 
     @DataProvider(parallel = false, name = "timePeriods")
