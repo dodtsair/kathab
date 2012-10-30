@@ -31,7 +31,9 @@ $(document).ready(function(){
                 var hashes = urlHash.split('&');
                 for(var pos in hashes) {
                     var pair = hashes[pos].split('=');
-                    hashObj[pair[0]] = pair[1];
+                    if(pair[0].length > 0 && pair[1].length > 0) {
+                        hashObj[pair[0]] = pair[1];
+                    }
                 }
                 return hashObj;
             }
@@ -39,7 +41,9 @@ $(document).ready(function(){
                 var hash = '#';
                 for (var key in newHash) {
                     hash = hash.concat(key, '=', newHash[key]);
+                    hash = hash.concat('&');
                 }
+                hash = hash.substr(0, hash.length - 1);
                 window.location.hash = hash;
             }
         }
