@@ -35,6 +35,11 @@ requirejs.config({
             //jqplot.js
             deps: ['com.jqplot/jqplot/jquery.jqplot'],
         },
+        'com.jqplot/jqplot/plugins/jqplot.categoryAxisRenderer': {
+            //These script dependencies should be loaded before loading
+            //jqplot.js
+            deps: ['com.jqplot/jqplot/jquery.jqplot'],
+        },
         'com.jqplot/jqplot/plugins/jqplot.pointLabels': {
             //These script dependencies should be loaded before loading
             //jqplot.js

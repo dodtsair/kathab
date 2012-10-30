@@ -25,9 +25,12 @@ package org.boazglean.kathab.api.summarization;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+
+import java.net.URL;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Statement;
 import javax.sql.DataSource;
 import org.h2.jdbcx.JdbcDataSource;
 import static org.mockito.Mockito.*;
@@ -49,8 +52,6 @@ public class SchemaTest {
     @BeforeMethod
     public void setup() throws Exception {
         connection = DriverManager.getConnection("jdbc:h2:mem:" + this.getClass().getSimpleName());
-        Schema schema = new Schema();
-        schema.initSchema(connection);
     }
     
     @AfterMethod
@@ -72,18 +73,132 @@ public class SchemaTest {
         Connection mockConnection = mock(Connection.class);
         Schema schema = new Schema();
         when(mockConnection.createStatement()).thenThrow(new SQLException("Generated for testing"));
-        Logger logger = (Logger) LoggerFactory.getLogger(schema.getClass());
-        logger.setLevel(Level.OFF);
         schema.initSchema(mockConnection);
     }
 
     @Test
-    public void initSchemaFailInfoOn() throws Exception {
-        Connection mockConnection = mock(Connection.class);
+    public void testAccessors() {
         Schema schema = new Schema();
-        when(mockConnection.createStatement()).thenThrow(new SQLException("Generated for testing"));
-        Logger logger = (Logger) LoggerFactory.getLogger(schema.getClass());
-        logger.setLevel(Level.ALL);
-        schema.initSchema(mockConnection);
+        String trivialSelect = "select 1";
+        ClassLoader loader = mock(ClassLoader.class);
+
+        assertTrue(schema.getDdl().indexOf("logging_event") != -1);
+
+        schema.setDdl(trivialSelect);
+        assertEquals(schema.getDdl(), trivialSelect);
+
+    }
+
+    @Test
+    public void testEquals() {
+        String trivialSelect = "select 1";
+        ClassLoader loader = mock(ClassLoader.class);
+        Schema schema = new Schema();
+        Schema other = new Schema();
+        Schema mocked = mock(Schema.class);
+
+        assertTrue(schema.equals(schema));
+        assertTrue(schema.equals(other));
+
+        other.setDdl(null);
+        assertFalse(schema.equals(other));
+        schema.setDdl(null);
+        assertTrue(schema.equals(other));
+        other.setDdl(trivialSelect);
+        assertFalse(schema.equals(other));
+        schema.setDdl("");
+        assertFalse(schema.equals(other));
+        schema.setDdl(trivialSelect);
+        assertTrue(schema.equals(other));
+
+        assertFalse((schema.equals(new Object())));
+
+        when(mocked.canEqual(schema)).thenReturn(false);
+
+        assertFalse(schema.equals(mocked));
+
+    }
+
+    @Test
+    public void testNegativeSchemaConstruction() {
+        Schema schema = new Schema("test shouldn't find this");
+        assertEquals(schema.getDdl(), "");
+    }
+
+    @Test
+    public void testSchemaConstructionException() throws Exception{
+        ClassLoader loader = mock(ClassLoader.class);
+
+        when(loader.getResource(anyString())).thenReturn(new URL("file:///doesnotexit/"));
+        Schema schema = new Schema("resource name does not matter", loader);
+
+        assertEquals(schema.getDdl(), "");
+
+    }
+
+    @Test
+    public void testInitSchemaException() throws Exception {
+        Schema schema = new Schema();
+        Connection connection = mock(Connection.class);
+
+        when(connection.createStatement()).thenThrow(new SQLException("Generated for tests"));
+
+        schema.initSchema(connection);
+    }
+
+    @Test
+    public void testInitSchemaExecuteException() throws Exception {
+        Schema schema = new Schema();
+        Connection connection = mock(Connection.class);
+        Statement statement = mock(Statement.class);
+
+        when(connection.createStatement()).thenReturn(statement);
+        when(statement.execute(anyString())).thenThrow(new SQLException("Generated for tests"));
+
+        schema.initSchema(connection);
+
+        verify(statement).close();
+
+    }
+
+    @Test
+    public void testInitSchemaNoStatement() throws Exception {
+        boolean exception = false;
+        Schema schema = new Schema();
+        Connection connection = mock(Connection.class);
+
+        when(connection.createStatement()).thenReturn(null);
+
+        try {
+            schema.initSchema(connection);
+        }
+        catch (NullPointerException e) {
+            exception = true;
+        }
+        assertTrue(exception);
+
+    }
+
+    @Test
+    public void testToString() {
+        Schema schema = new Schema();
+
+        assertNotNull(schema.toString());
+
+        schema.setDdl(null);
+
+        assertNotNull(schema.toString());
+    }
+
+
+    @Test
+    public void testHashcode() {
+        Schema schema = new Schema();
+
+        schema.hashCode();
+
+        schema.setDdl(null);
+
+        schema.hashCode();
     }
 }

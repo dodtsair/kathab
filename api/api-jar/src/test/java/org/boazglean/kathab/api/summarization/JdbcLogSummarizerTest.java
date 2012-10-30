@@ -291,7 +291,146 @@ public class JdbcLogSummarizerTest {
         assertEquals(summary.getCount(logEleven.getName()), 3);
         assertEquals(summary.getCount(testLogger.getName()), 0);
     }
-    
+
+    @Test
+    public void summarizePrefixCoverSqlException() throws Exception {
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
+        Connection connection = mock(Connection.class);
+        PreparedStatement query = mock(PreparedStatement.class);
+
+        when(jdbcSource.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(query);
+        when(query.executeQuery()).thenThrow(new SQLException("throw for tests"));
+        summy.setSource(jdbcSource);
+
+        PrefixSummary summary = summy.summarizePrefix();
+        assertNull(summary);
+    }
+
+    @Test
+    public void summarizePrefixCoverEmptyResult() throws Exception {
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
+        Connection connection = mock(Connection.class);
+        PreparedStatement query = mock(PreparedStatement.class);
+        ResultSet request = mock(ResultSet.class);
+
+        when(jdbcSource.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(query);
+        when(query.executeQuery()).thenReturn(request);
+        when(request.next()).thenReturn(false);
+        summy.setSource(jdbcSource);
+
+        PrefixSummary summary = summy.summarizePrefix();
+        assertNotNull(summary);
+        assertEquals(summary.getPoints().size(), 0);
+    }
+
+    @Test
+    public void summarizePrefixCoverCloseConnection() throws Exception {
+        //The cleanup annotation will check to see if the object being
+        //cleaned up is not null.  We need to make the object null
+        //to exercise that branch.
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
+        boolean exception = false;
+
+        when(jdbcSource.getConnection()).thenReturn(null);
+        summy.setSource(jdbcSource);
+
+        try {
+            summy.summarizePrefix();
+        }
+        catch (NullPointerException e) {
+            exception = true;
+            //Expected exception
+        }
+        assertTrue(exception);
+
+    }
+
+    @Test
+    public void summarizePrefixCoverCloseStatement() throws Exception {
+        //The cleanup annotation will check to see if the object being
+        //cleaned up is not null.  We need to make the object null
+        //to exercise that branch.
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
+        Connection connection = mock(Connection.class);
+        PreparedStatement query = mock(PreparedStatement.class);
+        ResultSet request = mock(ResultSet.class);
+        boolean exception = false;
+
+        when(jdbcSource.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(null);
+        summy.setSource(jdbcSource);
+
+        try {
+            summy.summarizePrefix();
+        }
+        catch (NullPointerException e) {
+            exception = true;
+            //Expected exception
+        }
+        assertTrue(exception);
+        verify(connection).close();
+    }
+
+    @Test
+    public void summarizePrefixCoverCloseResult() throws Exception {
+        //The cleanup annotation will check to see if the object being
+        //cleaned up is not null.  We need to make the object null
+        //to exercise that branch.
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
+        Connection connection = mock(Connection.class);
+        PreparedStatement query = mock(PreparedStatement.class);
+        ResultSet request = mock(ResultSet.class);
+        boolean exception = false;
+
+        when(jdbcSource.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(query);
+        when(query.executeQuery()).thenReturn(null);
+        summy.setSource(jdbcSource);
+
+        try {
+            summy.summarizePrefix();
+        }
+        catch (NullPointerException e) {
+            exception = true;
+            //Expected exception
+        }
+        assertTrue(exception);
+        verify(query).close();
+    }
+
+    @Test
+    public void summarizePrefixCoverExceptionalCloseResult() throws Exception {
+        //The cleanup annotation creates a finally block, in java there
+        //are two finally blocks one is executed in the normal case
+        //the other is executed during an exception
+        //Execute the finally exception block with a non null result
+        //so that the code calls close on it.
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
+        Connection connection = mock(Connection.class);
+        PreparedStatement query = mock(PreparedStatement.class);
+        ResultSet request = mock(ResultSet.class);
+        boolean exception = false;
+
+        when(jdbcSource.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(query);
+        when(query.executeQuery()).thenReturn(request);
+        when(request.next()).thenThrow(new SQLException("Generated for tests"));
+        summy.setSource(jdbcSource);
+
+        PrefixSummary summary = summy.summarizePrefix();
+        assertNotNull(summary);
+
+        verify(request).close();
+    }
+
     @Test
     public void summarizeByLevelFilterPackage() {
         JdbcLogSummarizer summy = new JdbcLogSummarizer();
@@ -312,7 +451,7 @@ public class JdbcLogSummarizerTest {
             }
             ++count;
         }
-        LevelSummary summary = summy.summarizeLevel(System.currentTimeMillis(), TimePeriod.DEFAULT, new String[] {logTwo.getName()}, LogLevel.values());
+        LevelSummary summary = summy.summarizeLevel(System.currentTimeMillis(), TimePeriod.DEFAULT, new String[]{logTwo.getName()}, LogLevel.values());
         assertNotNull(summary);
         assertEquals(summary.getCount(LogLevel.ERROR), 4);
         assertEquals(summary.getCount(LogLevel.WARN), 5);
@@ -510,6 +649,171 @@ public class JdbcLogSummarizerTest {
     }
 
     @Test
+    public void summarizeLevelCoverEmptyResult() throws Exception {
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
+        Connection connection = mock(Connection.class);
+        PreparedStatement query = mock(PreparedStatement.class);
+        ResultSet request = mock(ResultSet.class);
+
+        when(jdbcSource.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(query);
+        when(query.executeQuery()).thenReturn(request);
+        when(request.next()).thenReturn(false);
+        summy.setSource(jdbcSource);
+
+        LevelSummary summary = summy.summarizeLevel();
+        assertNotNull(summary);
+        assertEquals(summary.size(), 0);
+    }
+
+    @Test
+    public void summarizeLevelCoverSevereLevel() throws Exception {
+        //Return some number for the eventCount, we'll pick 3.
+        final int someNumber = 3;
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
+        Connection connection = mock(Connection.class);
+        PreparedStatement query = mock(PreparedStatement.class);
+        ResultSet request = mock(ResultSet.class);
+
+        when(jdbcSource.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(query);
+        when(query.executeQuery()).thenReturn(request);
+        when(request.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+        //Precede a legit LogLevel with an illegitimate LogLevel
+        //the code should swallow SEVERE and return ERROR
+        when(request.getString(anyString())).thenReturn("SEVERE").thenReturn("ERROR");
+        when(request.getInt(anyString())).thenReturn(someNumber).thenReturn(someNumber);
+        summy.setSource(jdbcSource);
+
+        LevelSummary summary = summy.summarizeLevel();
+        assertNotNull(summary);
+        assertEquals(summary.size(), 1);
+        assertEquals(summary.getCount(LogLevel.ERROR), someNumber);
+    }
+
+    @Test
+    public void summarizeLevelCoverSqlException() throws Exception {
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
+        Connection connection = mock(Connection.class);
+        PreparedStatement query = mock(PreparedStatement.class);
+
+        when(jdbcSource.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(query);
+        when(query.executeQuery()).thenThrow(new SQLException("throw for tests"));
+        summy.setSource(jdbcSource);
+
+        LevelSummary summary = summy.summarizeLevel();
+        assertNull(summary);
+    }
+
+    @Test
+    public void summarizeLevelCoverCloseConnection() throws Exception {
+        //The cleanup annotation will check to see if the object being
+        //cleaned up is not null.  We need to make the object null
+        //to exercise that branch.
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
+        boolean exception = false;
+
+        when(jdbcSource.getConnection()).thenReturn(null);
+        summy.setSource(jdbcSource);
+
+        try {
+            summy.summarizeLevel();
+        }
+        catch (NullPointerException e) {
+            exception = true;
+            //Expected exception
+        }
+        assertTrue(exception);
+
+    }
+
+    @Test
+    public void summarizeLevelCoverCloseStatement() throws Exception {
+        //The cleanup annotation will check to see if the object being
+        //cleaned up is not null.  We need to make the object null
+        //to exercise that branch.
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
+        Connection connection = mock(Connection.class);
+        PreparedStatement query = mock(PreparedStatement.class);
+        ResultSet request = mock(ResultSet.class);
+        boolean exception = false;
+
+        when(jdbcSource.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(null);
+        summy.setSource(jdbcSource);
+
+        try {
+            summy.summarizeLevel();
+        }
+        catch (NullPointerException e) {
+            exception = true;
+            //Expected exception
+        }
+        assertTrue(exception);
+        verify(connection).close();
+    }
+
+    @Test
+    public void summarizeLevelCoverCloseResult() throws Exception {
+        //The cleanup annotation will check to see if the object being
+        //cleaned up is not null.  We need to make the object null
+        //to exercise that branch.
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
+        Connection connection = mock(Connection.class);
+        PreparedStatement query = mock(PreparedStatement.class);
+        ResultSet request = mock(ResultSet.class);
+        boolean exception = false;
+
+        when(jdbcSource.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(query);
+        when(query.executeQuery()).thenReturn(null);
+        summy.setSource(jdbcSource);
+
+        try {
+            summy.summarizeLevel();
+        }
+        catch (NullPointerException e) {
+            exception = true;
+            //Expected exception
+        }
+        assertTrue(exception);
+        verify(query).close();
+    }
+
+    @Test
+    public void summarizeLevelCoverExceptionalCloseResult() throws Exception {
+        //The cleanup annotation creates a finally block, in java there
+        //are two finally blocks one is executed in the normal case
+        //the other is executed during an exception
+        //Execute the finally exception block with a non null result
+        //so that the code calls close on it.
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
+        Connection connection = mock(Connection.class);
+        PreparedStatement query = mock(PreparedStatement.class);
+        ResultSet request = mock(ResultSet.class);
+        boolean exception = false;
+
+        when(jdbcSource.getConnection()).thenReturn(connection);
+        when(connection.prepareStatement(anyString())).thenReturn(query);
+        when(query.executeQuery()).thenReturn(request);
+        when(request.next()).thenThrow(new SQLException("Generated for tests"));
+        summy.setSource(jdbcSource);
+
+        LevelSummary summary = summy.summarizeLevel();
+        assertNotNull(summary);
+
+        verify(request).close();
+    }
+
+    @Test
     public void summarizePeriodCoverSqlException() throws Exception {
         JdbcLogSummarizer summy = new JdbcLogSummarizer();
         JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
@@ -523,32 +827,6 @@ public class JdbcLogSummarizerTest {
 
         TimeSummary summary = summy.summarizeTime();
         assertNull(summary);
-    }
-
-    @Test
-    public void summarizePeriodCoverInfoBranch() throws Exception {
-        JdbcLogSummarizer summy = new JdbcLogSummarizer();
-        JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
-        Connection connection = mock(Connection.class);
-        PreparedStatement query = mock(PreparedStatement.class);
-
-        when(jdbcSource.getConnection()).thenReturn(connection);
-        when(connection.prepareStatement(anyString())).thenReturn(query);
-        when(query.executeQuery()).thenThrow(new SQLException("throw for tests"));
-        summy.setSource(jdbcSource);
-
-        Logger logger = (Logger)LoggerFactory.getLogger(summy.getClass());
-        //Turn info on
-        logger.setLevel(Level.INFO);
-
-        //generate the exception
-        summy.summarizeTime();
-
-        //Turn info off
-        logger.setLevel(Level.OFF);
-
-        //generate the exception
-        summy.summarizeTime();
     }
 
     @Test
@@ -594,28 +872,6 @@ public class JdbcLogSummarizerTest {
     }
 
     @Test
-    public void summarizePeriodCoverCloseConnectionException() throws Exception {
-        //The cleanup annotation will close the jdbc objects which could throw
-        //an exception.  Make sure the code handles those exceptions gracefully
-        JdbcLogSummarizer summy = new JdbcLogSummarizer();
-        JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
-        Connection connection = mock(Connection.class);
-        PreparedStatement query = mock(PreparedStatement.class);
-        ResultSet request = mock(ResultSet.class);
-
-        when(jdbcSource.getConnection()).thenReturn(connection);
-        when(connection.prepareStatement(anyString())).thenReturn(query);
-        when(query.executeQuery()).thenReturn(request);
-        when(request.next()).thenReturn(false);
-        doThrow(new SQLException("Generated for test")).when(connection).close();
-        summy.setSource(jdbcSource);
-
-        TimeSummary summary = summy.summarizeTime();
-        //If we get a result but fail to close we'll still hand back the result
-        assertEquals(summary.size(), 0);
-    }
-
-    @Test
     public void summarizePeriodCoverCloseStatement() throws Exception {
         //The cleanup annotation will check to see if the object being
         //cleaned up is not null.  We need to make the object null
@@ -639,28 +895,7 @@ public class JdbcLogSummarizerTest {
             //Expected exception
         }
         assertTrue(exception);
-    }
-
-    @Test
-    public void summarizePeriodCoverCloseStatementException() throws Exception {
-        //The cleanup annotation will close the jdbc objects which could throw
-        //an exception.  Make sure the code handles those exceptions gracefully
-        JdbcLogSummarizer summy = new JdbcLogSummarizer();
-        JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
-        Connection connection = mock(Connection.class);
-        PreparedStatement query = mock(PreparedStatement.class);
-        ResultSet request = mock(ResultSet.class);
-
-        when(jdbcSource.getConnection()).thenReturn(connection);
-        when(connection.prepareStatement(anyString())).thenReturn(query);
-        when(query.executeQuery()).thenReturn(request);
-        when(request.next()).thenReturn(false);
-        doThrow(new SQLException("Generated for test")).when(query).close();
-        summy.setSource(jdbcSource);
-
-        TimeSummary summary = summy.summarizeTime();
-        //If we get a result but fail to close we'll still hand back the result
-        assertEquals(summary.size(), 0);
+        verify(connection).close();
     }
 
     @Test
@@ -676,7 +911,7 @@ public class JdbcLogSummarizerTest {
         boolean exception = false;
 
         when(jdbcSource.getConnection()).thenReturn(connection);
-        when(connection.prepareStatement(anyString())).thenReturn(null);
+        when(connection.prepareStatement(anyString())).thenReturn(query);
         when(query.executeQuery()).thenReturn(null);
         summy.setSource(jdbcSource);
 
@@ -688,29 +923,98 @@ public class JdbcLogSummarizerTest {
             //Expected exception
         }
         assertTrue(exception);
+        verify(query).close();
     }
 
     @Test
-    public void summarizePeriodCoverCloseResultException() throws Exception {
-        //The cleanup annotation will close the jdbc objects which could throw
-        //an exception.  Make sure the code handles those exceptions gracefully
+    public void summarizePeriodCoverExceptionalCloseResult() throws Exception {
+        //The cleanup annotation creates a finally block, in java there
+        //are two finally blocks one is executed in the normal case
+        //the other is executed during an exception
+        //Execute the finally exception block with a non null result
+        //so that the code calls close on it.
         JdbcLogSummarizer summy = new JdbcLogSummarizer();
         JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
         Connection connection = mock(Connection.class);
         PreparedStatement query = mock(PreparedStatement.class);
         ResultSet request = mock(ResultSet.class);
+        boolean exception = false;
 
         when(jdbcSource.getConnection()).thenReturn(connection);
         when(connection.prepareStatement(anyString())).thenReturn(query);
         when(query.executeQuery()).thenReturn(request);
-        when(request.next()).thenReturn(false);
-        doThrow(new SQLException("Generated for test")).when(request).close();
+        when(request.next()).thenThrow(new SQLException("Generated for tests"));
         summy.setSource(jdbcSource);
 
         TimeSummary summary = summy.summarizeTime();
-        //If we get a result but fail to close we'll still hand back the result
-        assertEquals(summary.size(), 0);
+        assertNotNull(summary);
+
+        verify(request).close();
     }
+
+    @Test
+    public void canEqual() {
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+
+        assertTrue(summy.canEqual(summy));
+        assertFalse(summy.canEqual(new Object()));
+
+    }
+
+    @Test
+    public void testEquals() {
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        JdbcLogSummarizer other = new JdbcLogSummarizer();
+        JdbcLogSummarizer mocked = mock(JdbcLogSummarizer.class);
+        JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
+        JdbcDataSource otherSource = mock(JdbcDataSource.class);
+
+        assertTrue(summy.equals(summy));
+        assertTrue(summy.equals(other));
+        other.setSource(jdbcSource);
+        assertFalse(summy.equals(other));
+        summy.setSource(otherSource);
+        assertFalse(summy.equals(other));
+        summy.setSource(jdbcSource);
+        assertTrue(summy.equals(other));
+
+        when(mocked.canEqual(summy)).thenReturn(false);
+
+        assertFalse(summy.equals(mocked));
+        assertFalse(summy.equals(new Object()));
+    }
+
+    @Test
+    public void testToString() {
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
+
+        assertNotNull(summy.toString());
+        summy.setSource(jdbcSource);
+        assertNotNull(summy.toString());
+
+    }
+
+    @Test
+    public void testHashcode() {
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
+
+        summy.hashCode();
+        summy.setSource(jdbcSource);
+        summy.hashCode();
+
+    }
+
+    @Test void testAccessors() {
+        JdbcLogSummarizer summy = new JdbcLogSummarizer();
+        JdbcDataSource jdbcSource = mock(JdbcDataSource.class);
+
+        assertNull(summy.getSource());
+        summy.setSource(jdbcSource);
+        assertEquals(summy.getSource(), jdbcSource);
+    }
+
 
     @DataProvider(parallel = false, name = "timePeriods")
     public Object[][] createTimePeriods() {
@@ -723,4 +1027,5 @@ public class JdbcLogSummarizerTest {
                 { TimePeriod.DAY},
         };
     }
+
 }

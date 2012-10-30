@@ -35,6 +35,7 @@ requirejs(['org.jquery/jquery-js/jquery',
     'com.jqplot/jqplot/plugins/jqplot.pieRenderer',
     'com.jqplot/jqplot/plugins/jqplot.barRenderer',
     'com.jqplot/jqplot/plugins/jqplot.pointLabels',
+    'com.jqplot/jqplot/plugins/jqplot.categoryAxisRenderer',
 ],
 function () {
     $(document).ready(function() {
@@ -178,7 +179,7 @@ function () {
                 $.getScript('../../api/summary/level/level=' + hash.level);
                 $.getScript('../../api/summary/prefix/level=' + hash.level);
             }
-            else if(!hasLevel && !hasPrefix) {
+            else if(!hasLevel &&    hasPrefix) {
                 $.getScript('../../api/summary/level/prefix=' + hash.prefix);
                 $.getScript('../../api/summary/prefix/prefix=' + hash.prefix);
             }
@@ -186,5 +187,20 @@ function () {
 
         $(window).bind( 'hashchange', fetchData);
         fetchData();
+        $('.level-filter').live('jqplotDataClick',
+            function (ev, seriesIndex, pointIndex, data) {
+                var hash = $.hash();
+                hash.level = data[0];
+                $.hash(hash);
+            }
+        );
+        $('.prefix-filter').live('jqplotDataClick',
+            function (ev, seriesIndex, pointIndex, data) {
+                var hash = $.hash();
+                var labels = JSON.parse($('.prefix-filter').attr('data-labels'));
+                hash.prefix = labels[pointIndex - 1];
+                $.hash(hash);
+            }
+        );
     });
 });

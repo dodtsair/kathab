@@ -24,7 +24,9 @@
 package org.boazglean.kathab.api.summarization;
 
 import java.sql.*;
+import java.sql.Connection;
 import java.util.*;
+import java.util.AbstractMap;
 import javax.sql.DataSource;
 import lombok.Cleanup;
 import lombok.Data;
@@ -101,9 +103,11 @@ public class JdbcLogSummarizer implements LogSummarizer {
             PreparedStatement query = connection.prepareStatement(summarizePackageQuery);
             query.setObject(1, includePrefixes);
             query.setObject(2, EnumMixin.names(levels));
+            @Cleanup
             ResultSet request = query.executeQuery();
             LinkedHashMap<String, Integer> values = new LinkedHashMap<String, Integer>();
             Collection<AbstractMap.SimpleImmutableEntry<String, Integer>> set = new HashSet<AbstractMap.SimpleImmutableEntry<String, Integer>>();
+            summary = new PrefixSummary(values);
             while (request.next()) {
                 String packageName = request.getString("PackageName");
                 int eventCount = request.getInt("eventCount");
@@ -111,12 +115,11 @@ public class JdbcLogSummarizer implements LogSummarizer {
                 set.add(new AbstractMap.SimpleImmutableEntry<String, Integer>(packageName, eventCount));
             }
             summary = new PrefixSummary(values);
+            //There are three branches that exist but cannot be executed here due to the cleanup annotation
         } catch (SQLException ex) {
             String error = "Failed to read package summary";
             log.debug(error, ex);
-            if (log.isInfoEnabled()) {
-                log.info("{}, prefixes: {}", error, Arrays.deepToString(includePrefixes));
-            }
+            log.info("{}, prefixes: {}", error, Arrays.deepToString(includePrefixes));
             log.error(error);
         }
         return summary;
@@ -149,18 +152,15 @@ public class JdbcLogSummarizer implements LogSummarizer {
                 } catch (IllegalArgumentException ex) {
                     String error = "Failed to parse logLevel";
                     log.debug(error, ex);
-                    if (log.isInfoEnabled()) {
-                        log.info("{}, level: {}", error, level);
-                    }
+                    log.info("{}, level: {}", error, level);
                     log.error(error);
                 }
             }
+            //There are three branches that exist but cannot be executed here due to the cleanup annotation
         } catch (SQLException ex) {
             String error = "Failed to read log level summary";
             log.debug(error, ex);
-            if (log.isInfoEnabled()) {
-                log.info("{}, levels: {}", error, Arrays.deepToString(levels));
-            }
+            log.info("{}, levels: {}", error, Arrays.deepToString(levels));
             log.error(error);
         }
         return summary;
@@ -210,12 +210,11 @@ public class JdbcLogSummarizer implements LogSummarizer {
                 long slice = request.getLong("slice");
                 summary.setCount(slice, eventCount);
             }
+            //There are three branches that exist but cannot be executed here due to the cleanup annotation
         } catch (SQLException ex) {
             String error = "Failed to read time summary";
             log.debug(error, ex);
-            if (log.isInfoEnabled()) {
-                log.info("{}, period: {}", error, period);
-            }
+            log.info("{}, period: {}", error, period);
             log.error(error);
         }
         return summary;

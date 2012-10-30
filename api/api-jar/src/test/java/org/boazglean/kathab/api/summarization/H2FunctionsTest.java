@@ -23,18 +23,34 @@
 
 package org.boazglean.kathab.api.summarization;
 
-import java.util.Map;
+
+import org.testng.annotations.Test;
+
+import java.sql.Timestamp;
+
+import static org.testng.Assert.*;
+import static org.mockito.Mockito.*;
 
 /**
  * User: mpower
- * Date: 8/3/12
- * Time: 3:43 PM
+ * Date: 10/24/12
+ * Time: 6:30 PM
  */
-public interface ImmutableEntry<K,V> extends Comparable<ImmutableEntry<K,V>> {
+public class H2FunctionsTest {
 
-    public K getKey();
-    public V getValue();
+    @Test
+    public void testDefaultCon() {
+        new H2Fuctions();
+    }
 
-//    public ImmutableEntry<K,V> withKey(K key);
-//    public ImmutableEntry<K,V> withValue(V value);
+    @Test
+    public void testGetMillis() {
+        Timestamp mockStamp = mock(Timestamp.class);
+
+        when(mockStamp.getTime()).thenReturn(0l);
+
+        long stamp = H2Fuctions.getMillis(mockStamp);
+
+        assertEquals(stamp, 0l);
+    }
 }

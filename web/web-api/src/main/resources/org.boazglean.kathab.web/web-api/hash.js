@@ -31,7 +31,9 @@ $(document).ready(function(){
                 var hashes = urlHash.split('&');
                 for(var pos in hashes) {
                     var pair = hashes[pos].split('=');
-                    hashObj[pair[0]] = pair[1];
+                    if(pair[0].length > 0 && pair[1].length > 0) {
+                        hashObj[pair[0]] = pair[1];
+                    }
                 }
                 return hashObj;
             }

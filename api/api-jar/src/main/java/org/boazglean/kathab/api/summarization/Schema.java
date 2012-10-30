@@ -46,29 +46,34 @@ public class Schema {
     public static final String LOGBACK_DB_DDL = "ch/qos/logback/classic/db/script/h2.sql";
     
     private String ddl;
-    
+
     public Schema() {
-        this(LOGBACK_DB_DDL);
+        this(LOGBACK_DB_DDL, null);
     }
 
     public Schema(String schemaPath) {
+        this(schemaPath, null);
+    }
+
+    public Schema(String schemaPath, ClassLoader loader) {
+        ClassLoader resourceloader = loader == null ? this.getClass().getClassLoader(): loader;
         ddl = "";
         URL ddlUrl = null;
         try {
-            ddlUrl = this.getClass().getClassLoader().getResource(schemaPath);
-            URLConnection connectionUrl = ddlUrl.openConnection();
-            int length = connectionUrl.getContentLength();
-            byte[] buffer = new byte[length];
-            InputStream ddlStream = connectionUrl.getInputStream();
-            ddlStream.read(buffer);
-            ddl = new String(buffer);
+            ddlUrl = resourceloader.getResource(schemaPath);
+            if(ddlUrl != null) {
+                URLConnection connectionUrl = ddlUrl.openConnection();
+                int length = connectionUrl.getContentLength();
+                byte[] buffer = new byte[length];
+                InputStream ddlStream = connectionUrl.getInputStream();
+                ddlStream.read(buffer);
+                ddl = new String(buffer);
+            }
         } catch (IOException ex) {
             String error = "Failed to load schema from classpath";
+            log.debug(error, ex);
+            log.info("{}, ddlPath: {}, ddlUrl: {}", new String[] {error, schemaPath, "" + ddlUrl});
             log.error(error);
-            if(log.isInfoEnabled()) {
-                log.info("{}, ddlPath: {}, ddlUrl: {}", new String[] {error, schemaPath, "" + ddlUrl});
-                log.info(error, ex);
-            }
         }
     }
 
@@ -78,11 +83,9 @@ public class Schema {
             ddlStatement.execute(ddl);
         } catch (SQLException ex) {
             String error = "Failed to create schema on connection";
+            log.debug(error, ex);
+            log.info("{}, ddl: {}", error, ddl);
             log.error(error);
-            if(log.isInfoEnabled()) {
-                log.info("{}, ddl: {}", error, ddl);
-                log.info(error, ex);
-            }
         }
         
     }

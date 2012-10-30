@@ -28,6 +28,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.DefaultValue;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.boazglean.kathab.api.summarization.*;
@@ -122,5 +123,89 @@ public class LogSummarizerService extends JdbcLogSummarizer implements LogSummar
     @Produces(value="application/json")
     public TimeSummary summarizeTime(@PathParam(value="period") TimePeriod period) {
         return super.summarizeTime(period);
+    }
+
+    @Override
+    @GET
+    @Path(value="/level/period={period}")
+    @Produces(value="application/json")
+    public LevelSummary summarizeLevel(@PathParam(value="period") TimePeriod period) {
+        return super.summarizeLevel(period);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    @GET
+    @Path(value="/prefix/period={period}")
+    @Produces(value="application/json")
+    public PrefixSummary summarizePrefix(@PathParam(value="period") TimePeriod period) {
+        return super.summarizePrefix(period);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    @GET
+    @Path(value="/prefix/level={level}&period={period}&prefix={prefix}")
+    @Produces(value="application/json")
+    public PrefixSummary summarizePrefix(
+            @DefaultValue("0")long endMillis, /* not used */
+            @PathParam(value="period") TimePeriod period,
+            @PathParam(value="prefix") String[] includePrefixes,
+            @PathParam(value="level") LogLevel... levels) {
+        return super.summarizePrefix(System.currentTimeMillis(), period, includePrefixes, levels);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    @GET
+    @Path(value="/prefix/level={level}")
+    @Produces(value="application/json")
+    public PrefixSummary summarizePrefix(@PathParam(value="level") LogLevel... levels) {
+        return super.summarizePrefix(levels);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    @GET
+    @Path(value="/level/level={level}&period={period}&prefix={prefix}")
+    @Produces(value="application/json")
+    public LevelSummary summarizeLevel(
+            @DefaultValue("0")long endMillis, /* not used */
+            @PathParam(value="period") TimePeriod period,
+            @PathParam(value="prefix") String[] includePrefix,
+            @PathParam(value="level") LogLevel... levels) {
+        return super.summarizeLevel(System.currentTimeMillis(), period, includePrefix, levels);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    @GET
+    @Path(value="/level/prefix={prefix}")
+    @Produces(value="application/json")
+    public LevelSummary summarizeLevel(@PathParam(value="prefix") String... includePrefix) {
+        return super.summarizeLevel(includePrefix);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    @GET
+    @Path(value="/period/level={level}")
+    @Produces(value="application/json")
+    public TimeSummary summarizeTime(@PathParam(value="level") LogLevel... levels) {
+        return super.summarizeTime(levels);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    @GET
+    @Path(value="/period/level={level}&period={period}&prefix={prefix}")
+    @Produces(value="application/json")
+    public TimeSummary summarizeTime(
+            @DefaultValue("0")long endMillis, /* not used */
+            @PathParam(value="period") TimePeriod period,
+            @PathParam(value="prefix") String[] includePrefix,
+            @PathParam(value="level") LogLevel... levels) {
+        return super.summarizeTime(System.currentTimeMillis(), period, includePrefix, levels);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    @GET
+    @Path(value="/period/prefix={prefix}")
+    @Produces(value="application/json")
+    public TimeSummary summarizeTime(String... includePrefix) {
+        return super.summarizeTime(includePrefix);    //To change body of overridden methods use File | Settings | File Templates.
     }
 }

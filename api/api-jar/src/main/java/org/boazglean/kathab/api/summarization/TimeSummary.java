@@ -23,6 +23,9 @@
  */
 package org.boazglean.kathab.api.summarization;
 
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
@@ -30,6 +33,8 @@ import java.util.LinkedHashMap;
  *
  * @author mpower
  */
+@Data
+@EqualsAndHashCode(callSuper = true)
 public class TimeSummary extends LinkedHashMap<Long, Integer> {
 
     public int getCount(long timeslot) {
