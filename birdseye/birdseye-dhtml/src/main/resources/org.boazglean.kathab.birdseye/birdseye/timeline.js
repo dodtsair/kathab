@@ -26,7 +26,15 @@ requirejs.config({
     baseUrl: '..',
 });
 
-requirejs(['org.jquery/jquery-js/jquery', 'com.beebole.pure/pure-js/pure', 'org.jquery/jquery-sparkline/jquery.sparkline','org.boazglean.kathab.web/web-api/hash','com.jqplot/jqplot/plugins/jqplot.dateAxisRenderer'],
+requirejs([
+    'org.jquery/jquery-js/jquery',
+    'com.beebole.pure/pure-js/pure',
+    'org.jquery/jquery-sparkline/jquery.sparkline',
+    'org.boazglean.kathab.web/web-api/hash',
+    'com.jqplot/jqplot/plugins/jqplot.dateAxisRenderer',
+    'com.jqplot/jqplot/plugins/jqplot.canvasAxisTickRenderer',
+    'com.jqplot/jqplot/plugins/jqplot.canvasTextRenderer',
+],
 function   () {
 
      $(document).ready(function() {
@@ -74,13 +82,19 @@ function   () {
         $(document).on("/summary/period", function(event, data) {
             $('.event-timeline').replaceWith(timelineRender(data));
             $('.event-timeline').jqplot([JSON.parse($('.event-timeline').attr('data-values'))], {
+                axesDefaults: {
+                },
                 axes: {
                     xaxis: {
-                      renderer:$.jqplot.DateAxisRenderer,
-                      tickOptions:{formatString:'%M:%S'},
-                      min: Number($('.event-timeline').attr('data-xmin')),
-                      max: Number($('.event-timeline').attr('data-xmax')),
-                      numberTicks: $('.event-timeline').attr('data-count'),
+                        renderer:$.jqplot.DateAxisRenderer,
+                        tickOptions:{
+                            formatString:'%M:%S',
+                            angle: -80,
+                        },
+                        min: Number($('.event-timeline').attr('data-xmin')),
+                        max: Number($('.event-timeline').attr('data-xmax')),
+                        numberTicks: $('.event-timeline').attr('data-count'),
+                        tickRenderer: $.jqplot.CanvasAxisTickRenderer,
                     },
                     yaxis: {
                         min: 0,

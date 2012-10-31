@@ -40,6 +40,21 @@ requirejs.config({
             //jqplot.js
             deps: ['com.jqplot/jqplot/jquery.jqplot'],
         },
+        'com.jqplot/jqplot/plugins/jqplot.canvasAxisTickRenderer': {
+            //These script dependencies should be loaded before loading
+            //jqplot.js
+            deps: ['com.jqplot/jqplot/jquery.jqplot'],
+        },
+        'com.jqplot/jqplot/plugins/jqplot.dateAxisRenderer': {
+            //These script dependencies should be loaded before loading
+            //jqplot.js
+            deps: ['com.jqplot/jqplot/jquery.jqplot'],
+        },
+        'com.jqplot/jqplot/plugins/jqplot.canvasTextRenderer': {
+            //These script dependencies should be loaded before loading
+            //jqplot.js
+            deps: ['com.jqplot/jqplot/jquery.jqplot'],
+        },
         'com.jqplot/jqplot/plugins/jqplot.pointLabels': {
             //These script dependencies should be loaded before loading
             //jqplot.js

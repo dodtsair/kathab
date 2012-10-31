@@ -141,7 +141,6 @@ function () {
                     renderer: $.jqplot.BarRenderer,
                     rendererOptions: {
                         barDirection: 'horizontal',
-                        barWidth: 15,
                     },
                     pointLabels: {
                         show: true,
@@ -190,7 +189,13 @@ function () {
         $('.level-filter').live('jqplotDataClick',
             function (ev, seriesIndex, pointIndex, data) {
                 var hash = $.hash();
-                hash.level = data[0];
+                if(hash.level != undefined) {
+                    //if the level is already set toggle it off
+                    hash.level = undefined;
+                }
+                else {
+                    hash.level = data[0];
+                }
                 $.hash(hash);
             }
         );
@@ -198,7 +203,14 @@ function () {
             function (ev, seriesIndex, pointIndex, data) {
                 var hash = $.hash();
                 var labels = JSON.parse($('.prefix-filter').attr('data-labels'));
-                hash.prefix = labels[pointIndex - 1];
+                if(hash.prefix != undefined) {
+                    //if the prefix is already on turn it off
+                    //or toggle the prefix filter
+                    hash.prefix = undefined;
+                }
+                else {
+                    hash.prefix = labels[pointIndex - 1];
+                }
                 $.hash(hash);
             }
         );

@@ -40,10 +40,14 @@ $(document).ready(function(){
             else {
                 var hash = '#';
                 for (var key in newHash) {
-                    hash = hash.concat(key, '=', newHash[key]);
-                    hash = hash.concat('&');
+                    if(key.length > 0 && newHash[key] != undefined && newHash[key].length > 0) {
+                        hash = hash.concat(key, '=', newHash[key]);
+                        hash = hash.concat('&');
+                    }
                 }
-                hash = hash.substr(0, hash.length - 1);
+                if(hash.length > 1) {
+                    hash = hash.substr(0, hash.length - 1);
+                }
                 window.location.hash = hash;
             }
         }
