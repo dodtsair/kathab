@@ -81,6 +81,43 @@ public class LogSummarizerService extends JdbcLogSummarizer implements LogSummar
         return super.summarizeLevel(levels);
     }
 
+    @GET
+    @Path(value="/prefix/level={level}&prefix={prefix}")
+    @Produces(value="application/json")
+    public LevelSummary summarizeLevel(@PathParam(value="prefix") String includePrefix, @PathParam(value="level") LogLevel... levels) {
+        log.info("Call to summary");
+        log.debug("Call to summary, prefix: {}, levels: {}", includePrefix, levels);
+        return super.summarizeLevel(System.currentTimeMillis(), TimePeriod.DEFAULT, new String[] {includePrefix}, levels);
+    }
+
+    @Override
+    @GET
+    @Path(value="/level/level={level}&period={period}&prefix={prefix}")
+    @Produces(value="application/json")
+    public LevelSummary summarizeLevel(
+            @DefaultValue("0")long endMillis, /* not used */
+            @PathParam(value="period") TimePeriod period,
+            @PathParam(value="prefix") String[] includePrefix,
+            @PathParam(value="level") LogLevel... levels) {
+        return super.summarizeLevel(System.currentTimeMillis(), period, includePrefix, levels);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    @GET
+    @Path(value="/level/prefix={prefix}")
+    @Produces(value="application/json")
+    public LevelSummary summarizeLevel(@PathParam(value="prefix") String... includePrefix) {
+        return super.summarizeLevel(includePrefix);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    @GET
+    @Path(value="/level/period={period}")
+    @Produces(value="application/json")
+    public LevelSummary summarizeLevel(@PathParam(value="period") TimePeriod period) {
+        return super.summarizeLevel(period);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
     @Override
     @GET
     @Path(value="/prefix/all")
@@ -98,39 +135,6 @@ public class LogSummarizerService extends JdbcLogSummarizer implements LogSummar
         log.info("Call to summary");
         log.debug("Call to summary, prefixes: {}", includePrefixes);
         return super.summarizePrefix(includePrefixes);
-    }
-
-    @GET
-    @Path(value="/prefix/level={level}&prefix={prefix}")
-    @Produces(value="application/json")
-    public LevelSummary summarizeLevel(@PathParam(value="prefix") String includePrefix, @PathParam(value="level") LogLevel... levels) {
-        log.info("Call to summary");
-        log.debug("Call to summary, prefix: {}, levels: {}", includePrefix, levels);
-        return super.summarizeLevel(System.currentTimeMillis(), TimePeriod.DEFAULT, new String[] {includePrefix}, levels);
-    }
-
-    @Override
-    @GET
-    @Path(value="/period/all")
-    @Produces(value="application/json")
-    public TimeSummary summarizeTime() {
-        return super.summarizeTime();
-    }
-
-    @Override
-    @GET
-    @Path(value="/period/period={period}")
-    @Produces(value="application/json")
-    public TimeSummary summarizeTime(@PathParam(value="period") TimePeriod period) {
-        return super.summarizeTime(period);
-    }
-
-    @Override
-    @GET
-    @Path(value="/level/period={period}")
-    @Produces(value="application/json")
-    public LevelSummary summarizeLevel(@PathParam(value="period") TimePeriod period) {
-        return super.summarizeLevel(period);    //To change body of overridden methods use File | Settings | File Templates.
     }
 
     @Override
@@ -163,26 +167,6 @@ public class LogSummarizerService extends JdbcLogSummarizer implements LogSummar
 
     @Override
     @GET
-    @Path(value="/level/level={level}&period={period}&prefix={prefix}")
-    @Produces(value="application/json")
-    public LevelSummary summarizeLevel(
-            @DefaultValue("0")long endMillis, /* not used */
-            @PathParam(value="period") TimePeriod period,
-            @PathParam(value="prefix") String[] includePrefix,
-            @PathParam(value="level") LogLevel... levels) {
-        return super.summarizeLevel(System.currentTimeMillis(), period, includePrefix, levels);    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
-    @Override
-    @GET
-    @Path(value="/level/prefix={prefix}")
-    @Produces(value="application/json")
-    public LevelSummary summarizeLevel(@PathParam(value="prefix") String... includePrefix) {
-        return super.summarizeLevel(includePrefix);    //To change body of overridden methods use File | Settings | File Templates.
-    }
-
-    @Override
-    @GET
     @Path(value="/period/level={level}")
     @Produces(value="application/json")
     public TimeSummary summarizeTime(@PathParam(value="level") LogLevel... levels) {
@@ -207,5 +191,21 @@ public class LogSummarizerService extends JdbcLogSummarizer implements LogSummar
     @Produces(value="application/json")
     public TimeSummary summarizeTime(String... includePrefix) {
         return super.summarizeTime(includePrefix);    //To change body of overridden methods use File | Settings | File Templates.
+    }
+
+    @Override
+    @GET
+    @Path(value="/period/all")
+    @Produces(value="application/json")
+    public TimeSummary summarizeTime() {
+        return super.summarizeTime();
+    }
+
+    @Override
+    @GET
+    @Path(value="/period/period={period}")
+    @Produces(value="application/json")
+    public TimeSummary summarizeTime(@PathParam(value="period") TimePeriod period) {
+        return super.summarizeTime(period);
     }
 }
